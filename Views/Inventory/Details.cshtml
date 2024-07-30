@@ -1,0 +1,64 @@
+﻿@model InventoryManager2.Models.Item
+
+@{
+    ViewData["Title"] = "Item ItemDetails";
+}
+
+<h1>Item ItemDetails</h1>
+
+<div>
+    <h4>Item</h4>
+    <hr />
+    <div>
+        <strong>Name:</strong> @Model.Name
+    </div>
+    <div>
+        <strong>Description:</strong> @Model.Description
+    </div>
+    <div>
+        <strong>Price:</strong> @Model.ItemDetail.Price.ToString()
+    </div>
+    <div>
+        <strong>Stock Quantity:</strong> @Model.ItemDetail.Quantity
+    </div>
+    <div>
+        <strong>Status:</strong> @Model.Status
+    </div>
+
+    <hr />
+    @if (Model.ItemDetail != null)
+    {
+        <div>
+            <strong>Manufacture Date:</strong> @Model.ItemDetail.ManufactureDate.ToString()
+        </div>
+        <div>
+            <strong>Expiry Date:</strong> @Model.ItemDetail.ExpiryDate.ToString()
+        </div>
+        <div>
+            <strong>Manufacturer:</strong> @Model.ItemDetail.Manufacturer
+        </div>
+        <div>
+            <strong>Weight:</strong> @Model.ItemDetail.Weight kg
+        </div>
+        <div>
+            <strong>Dimensions:</strong> @Model.ItemDetail.Dimensions
+        </div>
+        <div>
+            <strong>Material:</strong> @Model.ItemDetail.Material
+        </div>
+        <div>
+            <strong>Color:</strong> @Model.ItemDetail.Color
+        </div>
+        <div>
+            <strong>Country of Origin:</strong> @Model.ItemDetail.CountryOfOrigin
+        </div>
+    }
+    else
+    {
+        <p>No ItemDetail information available for this item.</p>
+    }
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>

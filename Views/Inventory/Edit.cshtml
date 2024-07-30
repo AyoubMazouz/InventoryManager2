@@ -1,0 +1,95 @@
+﻿@model InventoryManager2.Models.Item
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Item</h4>
+<hr />
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <form asp-action="Edit" class="row">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2 col-6">
+                <label asp-for="ItemDetail.Price" class="control-label"></label>
+                <input asp-for="ItemDetail.Price" class="form-control" />
+                <span asp-validation-for="ItemDetail.Price" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2 col-6">
+                <label asp-for="ItemDetail.Quantity" class="control-label"></label>
+                <input asp-for="ItemDetail.Quantity" class="form-control" />
+                <span asp-validation-for="ItemDetail.Quantity" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2 col-6">
+                <label asp-for="Status" class="control-label"></label>
+                <select asp-for="Status" class="form-control" asp-items="ViewBag.StatusList"></select>
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2 col-6">
+                <label asp-for="ItemDetail.Color" class="control-label"></label>
+                <input asp-for="ItemDetail.Color" class="form-control" />
+                <span asp-validation-for="ItemDetail.Color" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2 col-6">
+                <label asp-for="ItemDetail.ManufactureDate" class="control-label"></label>
+                <input asp-for="ItemDetail.ManufactureDate" class="form-control" />
+                <span asp-validation-for="ItemDetail.ManufactureDate" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2 col-6">
+                <label asp-for="ItemDetail.ExpiryDate" class="control-label"></label>
+                <input asp-for="ItemDetail.ExpiryDate" class="form-control" />
+                <span asp-validation-for="ItemDetail.ExpiryDate" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2">
+                <label asp-for="ItemDetail.CountryOfOrigin" class="control-label"></label>
+                <input asp-for="ItemDetail.CountryOfOrigin" class="form-control" />
+                <span asp-validation-for="ItemDetail.CountryOfOrigin" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2">
+                <label asp-for="ItemDetail.Manufacturer" class="control-label"></label>
+                <input asp-for="ItemDetail.Manufacturer" class="form-control" />
+                <span asp-validation-for="ItemDetail.Manufacturer" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2 col-4">
+                <label asp-for="ItemDetail.Weight" class="control-label"></label>
+                <input asp-for="ItemDetail.Weight" class="form-control" />
+                <span asp-validation-for="ItemDetail.Weight" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2 col-4">
+                <label asp-for="ItemDetail.Dimensions" class="control-label"></label>
+                <input asp-for="ItemDetail.Dimensions" class="form-control" />
+                <span asp-validation-for="ItemDetail.Dimensions" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2 col-4">
+                <label asp-for="ItemDetail.Material" class="control-label"></label>
+                <input asp-for="ItemDetail.Material" class="form-control" />
+                <span asp-validation-for="ItemDetail.Material" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-2">
+                <input type="submit" value="Update" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
