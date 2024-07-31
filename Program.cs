@@ -45,10 +45,10 @@ else
     app.UseHsts();
 }
 
-var supportedCultures = new[] { new CultureInfo("eu-EU") };
+var supportedCultures = new[] { new CultureInfo("fr-FR") };
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
-    DefaultRequestCulture = new RequestCulture("eu-EU"),
+    DefaultRequestCulture = new RequestCulture("fr-FR"),
     SupportedCultures = supportedCultures,
     SupportedUICultures = supportedCultures
 });
