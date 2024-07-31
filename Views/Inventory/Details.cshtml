@@ -1,64 +1,92 @@
 ﻿@model InventoryManager2.Models.Item
 
 @{
-    ViewData["Title"] = "Item ItemDetails";
+    ViewData["Title"] = "Détails";
 }
 
-<h1>Item ItemDetails</h1>
+<h1>Détails de l'article</h1>
 
-<div>
-    <h4>Item</h4>
-    <hr />
-    <div>
-        <strong>Name:</strong> @Model.Name
-    </div>
-    <div>
-        <strong>Description:</strong> @Model.Description
-    </div>
-    <div>
-        <strong>Price:</strong> @Model.ItemDetail.Price.ToString()
-    </div>
-    <div>
-        <strong>Stock Quantity:</strong> @Model.ItemDetail.Quantity
-    </div>
-    <div>
-        <strong>Status:</strong> @Model.Status
-    </div>
-
-    <hr />
-    @if (Model.ItemDetail != null)
-    {
-        <div>
-            <strong>Manufacture Date:</strong> @Model.ItemDetail.ManufactureDate.ToString()
+<div class="d-flex justify-content-center align-items-center w-full">
+    <p>
+        <a asp-action="Create">Créer Nouveau</a>
+    </p>
+    <form method="post" asp-action="Export">
+        <div class="form-group">
+            <label for="exportType">Sélectionnez le type d'exportation</label>
+            <select id="exportType" name="exportType" class="form-control">
+                <option value="xlsx">Excel (.xlsx)</option>
+                <option value="csv">CSV (.csv)</option>
+            </select>
         </div>
-        <div>
-            <strong>Expiry Date:</strong> @Model.ItemDetail.ExpiryDate.ToString()
-        </div>
-        <div>
-            <strong>Manufacturer:</strong> @Model.ItemDetail.Manufacturer
-        </div>
-        <div>
-            <strong>Weight:</strong> @Model.ItemDetail.Weight kg
-        </div>
-        <div>
-            <strong>Dimensions:</strong> @Model.ItemDetail.Dimensions
-        </div>
-        <div>
-            <strong>Material:</strong> @Model.ItemDetail.Material
-        </div>
-        <div>
-            <strong>Color:</strong> @Model.ItemDetail.Color
-        </div>
-        <div>
-            <strong>Country of Origin:</strong> @Model.ItemDetail.CountryOfOrigin
-        </div>
-    }
-    else
-    {
-        <p>No ItemDetail information available for this item.</p>
-    }
+        <button type="submit" class="btn btn-primary">Exporter</button>
+    </form>
 </div>
 
+<dl class="row">
+    <dt class="col-sm-2">Nom</dt>
+    <dd class="col-sm-10">@Model?.Name</dd>
+
+    <dt class="col-sm-2">Description</dt>
+    <dd class="col-sm-10">@Model?.Description</dd>
+
+    <dt class="col-sm-2">Statut</dt>
+    <dd class="col-sm-10">@Model?.Status</dd>
+
+    <dt class="col-sm-2">Quantité</dt>
+    <dd class="col-sm-10">@Model?.ItemDetail?.Quantity.ToString()</dd>
+
+    <dt class="col-sm-2">Prix</dt>
+    <dd class="col-sm-10">@Model?.ItemDetail?.Price.ToString()</dd>
+
+    <dt class="col-sm-2">Fabricant</dt>
+    <dd class="col-sm-10">@Model?.ItemDetail?.Manufacturer</dd>
+
+    <dt class="col-sm-2">Poids</dt>
+    <dd class="col-sm-10">@Model?.ItemDetail?.Weight.ToString()</dd>
+
+    <dt class="col-sm-2">Dimensions</dt>
+    <dd class="col-sm-10">@Model?.ItemDetail?.Dimensions</dd>
+
+    <dt class="col-sm-2">Matériel</dt>
+    <dd class="col-sm-10">@Model?.ItemDetail?.Material</dd>
+
+    <dt class="col-sm-2">Couleur</dt>
+    <dd class="col-sm-10">@Model?.ItemDetail?.Color</dd>
+
+    <dt class="col-sm-2">Pays d'origine</dt>
+    <dd class="col-sm-10">@Model?.ItemDetail?.CountryOfOrigin</dd>
+
+    <dt class="col-sm-2">Date de fabrication</dt>
+    <dd class="col-sm-10">@Model?.ItemDetail?.ManufactureDate.ToString("yyyy-MM-dd")</dd>
+
+    <dt class="col-sm-2">Date d'expiration</dt>
+    <dd class="col-sm-10">@Model?.ItemDetail?.ExpiryDate.ToString("yyyy-MM-dd")</dd>
+
+    <dt class="col-sm-2">Nom de la catégorie</dt>
+    <dd class="col-sm-10">@Model?.Category?.Name</dd>
+
+    <dt class="col-sm-2">ID de la catégorie</dt>
+    <dd class="col-sm-10">@Model?.CategoryId.ToString()</dd>
+
+    <dt class="col-sm-2">Nom du fournisseur</dt>
+    <dd class="col-sm-10">@Model?.Supplier?.Name</dd>
+
+    <dt class="col-sm-2">Nom d'utilisateur</dt>
+    <dd class="col-sm-10">@Model?.User?.UserName</dd>
+
+    <dt class="col-sm-2">Date de création</dt>
+    <dd class="col-sm-10">@Model?.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+
+    <dt class="col-sm-2">Date de mise à jour</dt>
+    <dd class="col-sm-10">@Model?.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+</dl>
+
+<td>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Details" asp-route-id="@Model?.Id">Details</a> |
+    <a asp-action="Delete" asp-route-id="@Model?.Id">Delete</a>
+</td>
+
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Retour à la liste</a>
 </div>
