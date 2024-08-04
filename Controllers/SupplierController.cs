@@ -20,17 +20,17 @@ namespace InventoryManager2.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public  IActionResult Index()
         {
-            return View(await _context.Supplier.ToListAsync());
+            return View(_context.Supplier.ToList());
         }
 
-        public async Task<IActionResult> Details(int? id)
+        public  IActionResult Details(int? id)
         {
 
             if (id == null) return NotFound();
 
-            var supplier = await _context.Supplier.FindAsync(id);
+            var supplier = _context.Supplier.Find(id);
 
             if (supplier == null) return NotFound();
 
@@ -44,7 +44,7 @@ namespace InventoryManager2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateUpdateSupplierVM model)
+        public  IActionResult Create(Supplier supplier)
         {
             if (!ModelState.IsValid) return View(model);
 
@@ -57,18 +57,18 @@ namespace InventoryManager2.Controllers
             };
 
             _context.Add(supplier);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
             this.Flash($"New Category named {model.Name} has been created!");
 
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Edit(int? id)
+        public  IActionResult Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var supplier = await _context.Supplier.FindAsync(id);
+            var supplier = _context.Supplier.Find(id);
 
             if (supplier == null) return NotFound();
 
@@ -77,11 +77,14 @@ namespace InventoryManager2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id, CreateUpdateSupplierVM model)
+        public  IActionResult Edit(int id, Supplier supplier)
         {
             if (id == null) return NotFound();
 
-            if (!ModelState.IsValid) return View(model);
+            if (ModelState.IsValid)
+            {
+                _context.Update(supplier);
+                _context.SaveChanges();
 
             var supplier = await _context.Supplier.FindAsync(id);
 
@@ -99,11 +102,9 @@ namespace InventoryManager2.Controllers
 
         }
 
-        public async Task<IActionResult> Delete(int? id)
+        public  IActionResult Delete(int id)
         {
-            if (id == null) return NotFound();
-
-            var supplier = await _context.Supplier.FindAsync(id);
+            var supplier = _context.Supplier.Find(id);
 
             if (supplier == null) return NotFound();
 
@@ -112,16 +113,16 @@ namespace InventoryManager2.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int? id)
+        public  IActionResult DeleteConfirmed(int id)
         {
-            if (id == null) return NotFound();
-
-            var supplier = await _context.Supplier.FindAsync(id);
+            var supplier = _context.Supplier.FirstOrDefault(i => i.Id == id);
 
             if (supplier == null) return NotFound();
 
-            _context.Supplier.Remove(supplier);
-            await _context.SaveChangesAsync();
+            // Check if there are no constrains
+
+             _context.Supplier.Remove(supplier);
+            _context.SaveChanges();
 
             this.Flash($"supplier named {supplier.Name} has been Deleted Successfully!");
 

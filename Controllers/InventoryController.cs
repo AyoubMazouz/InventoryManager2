@@ -22,7 +22,7 @@ namespace InventoryManager2.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public  IActionResult Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
 
@@ -36,11 +36,10 @@ namespace InventoryManager2.Controllers
             return View(items);
         }
 
-        public async Task<IActionResult> Details(int? id)
+        public  IActionResult Details(int? id)
         {
             if (id == null) return NotFound();
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
             var item = _context.Items
                 .Include(i => i.Category)
                 .Include(i => i.Supplier)
@@ -52,7 +51,7 @@ namespace InventoryManager2.Controllers
             return View(item);
         }
 
-        public async Task<IActionResult> Create()
+        public  IActionResult Create()
         {
             ViewBag.StatusList = this.GetStatusSelectList();
             ViewBag.Categories = new SelectList(_context.Category, "Id", "Name");
@@ -63,7 +62,7 @@ namespace InventoryManager2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ItemViewModel model)
+        public  IActionResult Create(ItemViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -108,7 +107,7 @@ namespace InventoryManager2.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Edit(int id)
+        public  IActionResult Edit(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var item = _context.Items
@@ -119,19 +118,40 @@ namespace InventoryManager2.Controllers
 
             if (item == null || item.UserId != userId) return NotFound();
 
+            var model = new ItemViewModel
+            {
+                Name = item.Name,
+                Description = item.Description,
+                Status = item.Status,
+                CategoryId = item.CategoryId,
+                SupplierId = item.SupplierId,
+                ItemDetail = new ItemDetailViewModel
+                {
+                    Quantity = item.ItemDetail.Quantity,
+                    Price = item.ItemDetail.Price,
+                    Manufacturer = item.ItemDetail.Manufacturer,
+                    Weight = item.ItemDetail.Weight,
+                    Dimensions = item.ItemDetail.Dimensions,
+                    Material = item.ItemDetail.Material,
+                    Color = item.ItemDetail.Color,
+                    CountryOfOrigin = item.ItemDetail.CountryOfOrigin,
+                    ItemId = item.ItemDetail.ItemId,
+                    ManufactureDate = item.ItemDetail.ManufactureDate,
+                    ExpiryDate = item.ItemDetail.ExpiryDate,
+                }
+            };
+
             ViewBag.StatusList = this.GetStatusSelectList();
             ViewBag.Categories = new SelectList(_context.Category, "Id", "Name");
             ViewBag.Suppliers = new SelectList(_context.Supplier, "Id", "Name");
 
-            return View(item);
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id, ItemViewModel model)
+        public  IActionResult Edit(int id, ItemViewModel model)
         {
-            if (id == null) return NotFound();
-
             if (!ModelState.IsValid)
             {
                 ViewBag.StatusList = this.GetStatusSelectList();
@@ -163,16 +183,6 @@ namespace InventoryManager2.Controllers
             item.ItemDetail.ManufactureDate = model.ItemDetail.ManufactureDate;
             item.ItemDetail.ExpiryDate = model.ItemDetail.ExpiryDate;
 
-            _context.Items.Update(item);
-            await _context.SaveChangesAsync();
-
-            this.Flash($"Item named {item.Name} has been Upadted Successfully!");
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        public async Task<IActionResult> Delete(int? id)
-        {
             if (id == null) return NotFound();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -199,7 +209,7 @@ namespace InventoryManager2.Controllers
 
             if (item == null || item.UserId != userId) return NotFound();
 
-            if (item.ItemDetail != null)
+             if (item.ItemDetail != null)
                 _context.ItemDetails.Remove(item.ItemDetail);
 
             _context.Items.Remove(item);

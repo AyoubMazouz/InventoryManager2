@@ -16,7 +16,7 @@ namespace InventoryManager2.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             var categories = await _context.Category
                 .Include(c => c.Parent)
@@ -25,14 +25,12 @@ namespace InventoryManager2.Controllers
             return View(categories);
         }
 
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int id)
         {
-            if (id == null) return NotFound();
-
-            var category = await _context.Category
+            var category = _context.Category
                 .Include(c => c.Parent)
                 .Include(c => c.Children)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefault(m => m.Id == id);
 
             if (category == null) return NotFound();
 
@@ -47,10 +45,12 @@ namespace InventoryManager2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateUpdateCategoryVM model)
+
+        public IActionResult Create(Category category)
         {
             if (!ModelState.IsValid)
             {
+
                 ViewData["Parent"] = new SelectList(_context.Category, "Id", "Name", model.ParentId);
                 return View(model);
             }
@@ -74,14 +74,14 @@ namespace InventoryManager2.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var category = await _context.Category
+            var category = _context.Category
                 .Include(c => c.Parent)
                 .Include(c => c.Children)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefault(m => m.Id == id);
 
             if (category == null) return NotFound();
 
@@ -91,7 +91,8 @@ namespace InventoryManager2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id, CreateUpdateCategoryVM model)
+        public IActionResult Edit(int id, Category category)
+
         {
             if (id == null) return NotFound();
 
@@ -122,14 +123,14 @@ namespace InventoryManager2.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if (id == null) return NotFound();
 
-            var category = await _context.Category
+            var category = _context.Category
                 .Include(c => c.Parent)
                 .Include(c => c.Children)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefault(m => m.Id == id);
 
             if (category == null) return NotFound();
 
@@ -138,7 +139,7 @@ namespace InventoryManager2.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int? id)
+        public IActionResult Delete(Category category)
         {
             if (id == null) return NotFound();
 
@@ -155,8 +156,10 @@ namespace InventoryManager2.Controllers
                 return RedirectToAction(nameof(Delete));
             }
 
+            // Check if Category can be deleted
+
             _context.Category.Remove(category);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
             this.Flash($"category named {category.Name} has been Deleted Successfully!");
 

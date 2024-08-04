@@ -6,20 +6,69 @@
 
 <h1>Détails de l'article</h1>
 
-<div class="d-flex justify-content-center align-items-center w-full">
-    <p>
-        <a asp-action="Create">Créer Nouveau</a>
-    </p>
-    <form method="post" asp-action="Export">
-        <div class="form-group">
-            <label for="exportType">Sélectionnez le type d'exportation</label>
-            <select id="exportType" name="exportType" class="form-control">
-                <option value="xlsx">Excel (.xlsx)</option>
-                <option value="csv">CSV (.csv)</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Exporter</button>
-    </form>
+<div>
+    <h4>Item</h4>
+    <hr />
+    <div>
+        <strong>Name:</strong> @Model.Name
+    </div>
+    <div>
+        <strong>Description:</strong> @Model.Description
+    </div>
+    <div>
+        <strong>Status:</strong> @Model.Status
+    </div>
+
+    <hr />
+
+    <div>
+        <strong>Category:</strong> @(Model.Category?.Name.ToString() ?? "Unkown")
+    </div>
+  
+    <div>
+        <strong>Supplier:</strong> @(Model.Supplier?.Name.ToString() ?? "Unkown")
+    </div>
+
+    <hr />
+
+    <div>
+        <strong>Quantity:</strong> @(Model.ItemDetail.Quantity?.ToString() ?? "N/A")
+    </div>
+    <div>
+        <strong>Price:</strong> @(Model.ItemDetail.Price?.ToString("C") ?? "N/A")
+    </div>
+    <div>
+        <strong>Manufacture Date:</strong> @Model.ItemDetail.ManufactureDate.ToString("d")
+    </div>
+    <div>
+        <strong>Expiry Date:</strong> @Model.ItemDetail.ExpiryDate.ToString("d")
+    </div>
+    <div>
+        <strong>Manufacturer:</strong> @(Model.ItemDetail.Manufacturer ?? "N/A")
+    </div>
+    <div>
+        <strong>Weight:</strong> @(Model.ItemDetail.Weight?.ToString() + " kg" ?? "N/A")
+    </div>
+    <div>
+        <strong>Dimensions:</strong> @(Model.ItemDetail.Dimensions ?? "N/A")
+    </div>
+    <div>
+        <strong>Material:</strong> @(Model.ItemDetail.Material ?? "N/A")
+    </div>
+    <div>
+        <strong>Color:</strong> @(Model.ItemDetail.Color ?? "N/A")
+    </div>
+    <div>
+        <strong>Country of Origin:</strong> @(Model.ItemDetail.CountryOfOrigin ?? "N/A")
+    </div>
+
+    <hr />
+    <div>
+        <strong>Updated At:</strong> @Model.UpdatedAt.ToString()
+    </div>
+    <div>
+        <strong>Created At:</strong> @Model.CreatedAt.ToString()
+    </div>
 </div>
 
 <dl class="row">
