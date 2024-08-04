@@ -128,11 +128,11 @@ namespace InventoryManager2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Item model)
+        public async Task<IActionResult> Edit(int? id, ItemViewModel model)
         {
-            if (id != model.Id) return NotFound();
+            if (id == null) return NotFound();
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 ViewBag.StatusList = this.GetStatusSelectList();
                 ViewBag.Categories = new SelectList(_context.Category, "Id", "Name");
