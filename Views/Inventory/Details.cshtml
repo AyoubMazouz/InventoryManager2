@@ -16,47 +16,59 @@
         <strong>Description:</strong> @Model.Description
     </div>
     <div>
-        <strong>Price:</strong> @Model.ItemDetail.Price.ToString()
-    </div>
-    <div>
-        <strong>Stock Quantity:</strong> @Model.ItemDetail.Quantity
-    </div>
-    <div>
         <strong>Status:</strong> @Model.Status
     </div>
 
     <hr />
-    @if (Model.ItemDetail != null)
-    {
-        <div>
-            <strong>Manufacture Date:</strong> @Model.ItemDetail.ManufactureDate.ToString()
-        </div>
-        <div>
-            <strong>Expiry Date:</strong> @Model.ItemDetail.ExpiryDate.ToString()
-        </div>
-        <div>
-            <strong>Manufacturer:</strong> @Model.ItemDetail.Manufacturer
-        </div>
-        <div>
-            <strong>Weight:</strong> @Model.ItemDetail.Weight kg
-        </div>
-        <div>
-            <strong>Dimensions:</strong> @Model.ItemDetail.Dimensions
-        </div>
-        <div>
-            <strong>Material:</strong> @Model.ItemDetail.Material
-        </div>
-        <div>
-            <strong>Color:</strong> @Model.ItemDetail.Color
-        </div>
-        <div>
-            <strong>Country of Origin:</strong> @Model.ItemDetail.CountryOfOrigin
-        </div>
-    }
-    else
-    {
-        <p>No ItemDetail information available for this item.</p>
-    }
+
+    <div>
+        <strong>Category:</strong> @(Model.Category?.Name.ToString() ?? "Unkown")
+    </div>
+  
+    <div>
+        <strong>Supplier:</strong> @(Model.Supplier?.Name.ToString() ?? "Unkown")
+    </div>
+
+    <hr />
+
+    <div>
+        <strong>Quantity:</strong> @(Model.ItemDetail.Quantity?.ToString() ?? "N/A")
+    </div>
+    <div>
+        <strong>Price:</strong> @(Model.ItemDetail.Price?.ToString("C") ?? "N/A")
+    </div>
+    <div>
+        <strong>Manufacture Date:</strong> @Model.ItemDetail.ManufactureDate.ToString("d")
+    </div>
+    <div>
+        <strong>Expiry Date:</strong> @Model.ItemDetail.ExpiryDate.ToString("d")
+    </div>
+    <div>
+        <strong>Manufacturer:</strong> @(Model.ItemDetail.Manufacturer ?? "N/A")
+    </div>
+    <div>
+        <strong>Weight:</strong> @(Model.ItemDetail.Weight?.ToString() + " kg" ?? "N/A")
+    </div>
+    <div>
+        <strong>Dimensions:</strong> @(Model.ItemDetail.Dimensions ?? "N/A")
+    </div>
+    <div>
+        <strong>Material:</strong> @(Model.ItemDetail.Material ?? "N/A")
+    </div>
+    <div>
+        <strong>Color:</strong> @(Model.ItemDetail.Color ?? "N/A")
+    </div>
+    <div>
+        <strong>Country of Origin:</strong> @(Model.ItemDetail.CountryOfOrigin ?? "N/A")
+    </div>
+
+    <hr />
+    <div>
+        <strong>Updated At:</strong> @Model.UpdatedAt.ToString()
+    </div>
+    <div>
+        <strong>Created At:</strong> @Model.CreatedAt.ToString()
+    </div>
 </div>
 
 <div>

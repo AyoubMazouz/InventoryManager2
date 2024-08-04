@@ -21,24 +21,28 @@ namespace InventoryManager2.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public  IActionResult Index()
         {
             var items = _context.Items.ToList();
             return View(items);
         }
 
-        public async Task<IActionResult> ItemDetails(int? id)
+        public  IActionResult Details(int? id)
         {
             if (id == null) return NotFound();
 
-            var item = _context.Items.Include(i => i.ItemDetail).FirstOrDefault(i => i.Id == id);
+            var item = _context.Items
+                .Include(i => i.Category)
+                .Include(i => i.Supplier)
+                .Include(i => i.ItemDetail)
+                .FirstOrDefault(i => i.Id == id);
 
             if (item == null) return NotFound();
 
             return View(item);
         }
 
-        public async Task<IActionResult> Create()
+        public  IActionResult Create()
         {
             ViewBag.StatusList = this.GetStatusSelectList();
             ViewBag.Categories = new SelectList(_context.Category, "Id", "Name");
@@ -49,7 +53,7 @@ namespace InventoryManager2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ItemViewModel model)
+        public  IActionResult Create(ItemViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -93,35 +97,83 @@ namespace InventoryManager2.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Edit(int id)
+        public  IActionResult Edit(int id)
         {
             var item = _context.Items
+                .Include(i => i.Category)
+                .Include(i => i.Supplier)
                 .Include(i => i.ItemDetail)
                 .FirstOrDefault(i => i.Id == id);
 
             if (item == null) return NotFound();
 
+            var model = new ItemViewModel
+            {
+                Name = item.Name,
+                Description = item.Description,
+                Status = item.Status,
+                CategoryId = item.CategoryId,
+                SupplierId = item.SupplierId,
+                ItemDetail = new ItemDetailViewModel
+                {
+                    Quantity = item.ItemDetail.Quantity,
+                    Price = item.ItemDetail.Price,
+                    Manufacturer = item.ItemDetail.Manufacturer,
+                    Weight = item.ItemDetail.Weight,
+                    Dimensions = item.ItemDetail.Dimensions,
+                    Material = item.ItemDetail.Material,
+                    Color = item.ItemDetail.Color,
+                    CountryOfOrigin = item.ItemDetail.CountryOfOrigin,
+                    ItemId = item.ItemDetail.ItemId,
+                    ManufactureDate = item.ItemDetail.ManufactureDate,
+                    ExpiryDate = item.ItemDetail.ExpiryDate,
+                }
+            };
+
             ViewBag.StatusList = this.GetStatusSelectList();
             ViewBag.Categories = new SelectList(_context.Category, "Id", "Name");
             ViewBag.Suppliers = new SelectList(_context.Supplier, "Id", "Name");
 
-            return View(item);
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Item item)
+        public  IActionResult Edit(int id, ItemViewModel model)
         {
-            if (id != item.Id) return NotFound();
-
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 ViewBag.StatusList = this.GetStatusSelectList();
                 ViewBag.Categories = new SelectList(_context.Category, "Id", "Name");
                 ViewBag.Suppliers = new SelectList(_context.Supplier, "Id", "Name");
 
-                return View(item);
+                return View(model);
             }
+
+            var item = _context.Items
+                .Include(i => i.Category)
+                .Include(i => i.Supplier)
+                .Include (i => i.ItemDetail)
+                .FirstOrDefault(i => i.Id == id);
+
+            if (item == null) return NotFound();
+
+            item.Name = model.Name;
+            item.Description = model.Description;
+            item.Status = model.Status;
+            item.CategoryId = model.CategoryId;
+            item.SupplierId = model.SupplierId;
+            item.ItemDetail.Quantity = model.ItemDetail.Quantity;
+            item.ItemDetail.Price = model.ItemDetail.Price;
+            item.ItemDetail.Manufacturer = model.ItemDetail.Manufacturer;
+            item.ItemDetail.Weight = model.ItemDetail.Weight;
+            item.ItemDetail.Dimensions = model.ItemDetail.Dimensions;
+            item.ItemDetail.Material = model.ItemDetail.Material;
+            item.ItemDetail.Color = model.ItemDetail.Color;
+            item.ItemDetail.CountryOfOrigin = model.ItemDetail.CountryOfOrigin;
+            item.ItemDetail.ManufactureDate = (DateTime)model.ItemDetail.ManufactureDate;
+            item.ItemDetail.ExpiryDate = (DateTime)model.ItemDetail.ExpiryDate;
+
             _context.Items.Update(item);
             _context.SaveChanges();
 
@@ -130,10 +182,8 @@ namespace InventoryManager2.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Delete(int? id)
+        public  IActionResult Delete(int id)
         {
-            if (id == null) return NotFound();
-
             var item = _context.Items
                 .Include(i => i.ItemDetail)
                 .FirstOrDefault(i => i.Id == id);
@@ -143,13 +193,17 @@ namespace InventoryManager2.Controllers
             return View(item);
         }
 
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(Item item)
+        public  IActionResult DeleteConfirmed(int id)
         {
+            var item = _context.Items
+                .Include(i => i.ItemDetail)
+                .FirstOrDefault(i => i.Id == id);
+
             if (item == null) return NotFound();
 
-            if (item.ItemDetail != null)
+             if (item.ItemDetail != null)
                 _context.ItemDetails.Remove(item.ItemDetail);
 
             _context.Items.Remove(item);
