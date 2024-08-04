@@ -1,10 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using InventoryManager2.Data;
+using InventoryManager2.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using OfficeOpenXml;
+using System.IO;
 
 namespace InventoryManager2.Controllers
 {
     public class BaseController : Controller
     {
-
         public enum AlertType
         {
             Success,
@@ -22,9 +27,9 @@ namespace InventoryManager2.Controllers
         };
 
         public void Flash(string message, AlertType type = AlertType.Success)
-      {
+        {
             TempData["Alert.Type"] = this.AlertTypeMappings[type];
             TempData["Alert.Message"] = message;
-      }
+        }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using InventoryManager2.Data;
 using InventoryManager2.Models;
+using InventoryManager2.ViewModels;
 
 namespace InventoryManager2.Controllers
 {
@@ -45,12 +46,20 @@ namespace InventoryManager2.Controllers
         [ValidateAntiForgeryToken]
         public  IActionResult Create(Supplier supplier)
         {
-            if (!ModelState.IsValid) return View(supplier);
-            
+            if (!ModelState.IsValid) return View(model);
+
+            var supplier = new Supplier
+            {
+                Name = model.Name,
+                ContactInfo = model.ContactInfo,
+                UpdatedAt = DateTime.Now,
+                CreatedAt = DateTime.Now,
+            };
+
             _context.Add(supplier);
             _context.SaveChanges();
 
-            this.Flash($"New Category named {supplier.Name} has been created!");
+            this.Flash($"New Category named {model.Name} has been created!");
 
             return RedirectToAction(nameof(Index));
         }
@@ -70,19 +79,27 @@ namespace InventoryManager2.Controllers
         [ValidateAntiForgeryToken]
         public  IActionResult Edit(int id, Supplier supplier)
         {
-            if (id != supplier.Id) return NotFound();
+            if (id == null) return NotFound();
 
             if (ModelState.IsValid)
             {
                 _context.Update(supplier);
                 _context.SaveChanges();
 
-                this.Flash($"Supplier named {supplier.Name} has been Upadted Successfully!");
+            var supplier = await _context.Supplier.FindAsync(id);
 
-                return RedirectToAction(nameof(Index));
-            }
+            if (supplier == null) return NotFound();
 
-            return View(supplier);
+            supplier.Name = model.Name;
+            supplier.ContactInfo = model.ContactInfo;
+
+            _context.Update(supplier);
+            await _context.SaveChangesAsync();
+
+            this.Flash($"Supplier named {supplier.Name} has been Upadted Successfully!");
+
+            return RedirectToAction(nameof(Index));
+
         }
 
         public  IActionResult Delete(int id)

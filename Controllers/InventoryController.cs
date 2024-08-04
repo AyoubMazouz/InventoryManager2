@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -23,21 +24,29 @@ namespace InventoryManager2.Controllers
 
         public  IActionResult Index()
         {
-            var items = _context.Items.ToList();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
+
+            var items = await _context.Items
+                .Include(i => i.Category)
+                .Include(i => i.Supplier)
+                .Include(i => i.ItemDetail)
+                .Where(i => i.UserId == userId)
+                .ToListAsync();
+
             return View(items);
         }
 
         public  IActionResult Details(int? id)
         {
             if (id == null) return NotFound();
-
+            
             var item = _context.Items
                 .Include(i => i.Category)
                 .Include(i => i.Supplier)
                 .Include(i => i.ItemDetail)
                 .FirstOrDefault(i => i.Id == id);
 
-            if (item == null) return NotFound();
+            if (item == null || item.UserId != userId) return NotFound();
 
             return View(item);
         }
@@ -64,6 +73,7 @@ namespace InventoryManager2.Controllers
                 return View(model);
             }
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var item = new Item
             {
                 Name = model.Name,
@@ -71,7 +81,7 @@ namespace InventoryManager2.Controllers
                 Status = model.Status,
                 CategoryId = model.CategoryId,
                 SupplierId = model.SupplierId,
-                UserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+                UserId = userId,
                 ItemDetail = new ItemDetail
                 {
                     Quantity = model.ItemDetail.Quantity,
@@ -90,7 +100,7 @@ namespace InventoryManager2.Controllers
                 UpdatedAt = DateTime.UtcNow
             };
             _context.Items.Add(item);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             this.Flash($"New Item named {item.Name} has been created!");
 
@@ -99,13 +109,14 @@ namespace InventoryManager2.Controllers
 
         public  IActionResult Edit(int id)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var item = _context.Items
                 .Include(i => i.Category)
                 .Include(i => i.Supplier)
                 .Include(i => i.ItemDetail)
                 .FirstOrDefault(i => i.Id == id);
 
-            if (item == null) return NotFound();
+            if (item == null || item.UserId != userId) return NotFound();
 
             var model = new ItemViewModel
             {
@@ -150,19 +161,17 @@ namespace InventoryManager2.Controllers
                 return View(model);
             }
 
-            var item = _context.Items
-                .Include(i => i.Category)
-                .Include(i => i.Supplier)
-                .Include (i => i.ItemDetail)
-                .FirstOrDefault(i => i.Id == id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var item = await _context.Items.Include(i => i.ItemDetail).FirstOrDefaultAsync(i => i.Id == id);
 
-            if (item == null) return NotFound();
+            if (item == null || item.UserId != userId) return NotFound();
 
             item.Name = model.Name;
             item.Description = model.Description;
             item.Status = model.Status;
             item.CategoryId = model.CategoryId;
             item.SupplierId = model.SupplierId;
+            item.UpdatedAt = DateTime.UtcNow;
             item.ItemDetail.Quantity = model.ItemDetail.Quantity;
             item.ItemDetail.Price = model.ItemDetail.Price;
             item.ItemDetail.Manufacturer = model.ItemDetail.Manufacturer;
@@ -171,47 +180,69 @@ namespace InventoryManager2.Controllers
             item.ItemDetail.Material = model.ItemDetail.Material;
             item.ItemDetail.Color = model.ItemDetail.Color;
             item.ItemDetail.CountryOfOrigin = model.ItemDetail.CountryOfOrigin;
-            item.ItemDetail.ManufactureDate = (DateTime)model.ItemDetail.ManufactureDate;
-            item.ItemDetail.ExpiryDate = (DateTime)model.ItemDetail.ExpiryDate;
+            item.ItemDetail.ManufactureDate = model.ItemDetail.ManufactureDate;
+            item.ItemDetail.ExpiryDate = model.ItemDetail.ExpiryDate;
 
-            _context.Items.Update(item);
-            _context.SaveChanges();
+            if (id == null) return NotFound();
 
-            this.Flash($"Item named {item.Name} has been Upadted Successfully!");
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        public  IActionResult Delete(int id)
-        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var item = _context.Items
+                .Include(i => i.Category)
+                .Include(i => i.Supplier)
                 .Include(i => i.ItemDetail)
                 .FirstOrDefault(i => i.Id == id);
 
-            if (item == null) return NotFound();
+            if (item == null || item.UserId != userId) return NotFound();
 
             return View(item);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public  IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int? id)
         {
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var item = _context.Items
-                .Include(i => i.ItemDetail)
+                .Include(i => i.Category)
                 .FirstOrDefault(i => i.Id == id);
 
-            if (item == null) return NotFound();
+            if (item == null || item.UserId != userId) return NotFound();
 
              if (item.ItemDetail != null)
                 _context.ItemDetails.Remove(item.ItemDetail);
 
             _context.Items.Remove(item);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             this.Flash($"Item named {item.Name} has been Deleted Successfully!");
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Export(string exportType)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var items = await _context.Items
+                .Where(i => i.UserId == userId)
+                .Include(i => i.User)
+                .Include(i => i.Category)
+                .Include(i => i.Supplier)
+                .Include(i => i.ItemDetail)
+                .ToListAsync();
+            
+            if (items.Count == 0) return NotFound();
+
+            switch (exportType.ToLower())
+            {
+                case "xlsx":
+                    return await this.ExportToExcel(items, "items");
+                case "csv":
+                    return await this.ExportToCsv(items, "items");
+                default:
+                    return BadRequest("Invalid export type.");
+            }
         }
 
         public SelectList GetStatusSelectList()
@@ -225,6 +256,80 @@ namespace InventoryManager2.Controllers
                     Text = e.ToString()
                 }
             ).ToList(), "Value", "Text");
+        }
+
+        public async Task<IActionResult> ExportToExcel(List<Item> items, string label)
+        {
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add(label);
+                var headers = new List<string>
+                {
+                    "Id", "Titre", "Description", "Statut", "Quantité", "Prix", "Fabricant",
+                    "Poids", "Dimensions", "Matériau", "Couleur", "Pays d'origine",
+                    "Date de fabrication", "Date d'expiration", "ID de catégorie",
+                    "Nom de catégorie", "ID de fournisseur", "Nom du fournisseur", "ID de Utilisateur", 
+                    "Nom complet de l'utilisateur", "Date de création", "Date de mise à jour"
+                };
+
+                for (int i = 0; i < headers.Count; i++)
+                {
+                    worksheet.Cells[1, i + 1].Value = headers[i];
+                }
+
+                int row = 2;
+                foreach (var item in items)
+                {
+                    worksheet.Cells[row, 1].Value = item.Id;
+                    worksheet.Cells[row, 2].Value = item.Name;
+                    worksheet.Cells[row, 3].Value = item.Description;
+                    worksheet.Cells[row, 4].Value = item.Status.ToString();
+                    worksheet.Cells[row, 5].Value = item.ItemDetail?.Quantity;
+                    worksheet.Cells[row, 6].Value = item.ItemDetail?.Price;
+                    worksheet.Cells[row, 7].Value = item.ItemDetail?.Manufacturer;
+                    worksheet.Cells[row, 8].Value = item.ItemDetail?.Weight;
+                    worksheet.Cells[row, 9].Value = item.ItemDetail?.Dimensions;
+                    worksheet.Cells[row, 10].Value = item.ItemDetail?.Material;
+                    worksheet.Cells[row, 11].Value = item.ItemDetail?.Color;
+                    worksheet.Cells[row, 12].Value = item.ItemDetail?.CountryOfOrigin;
+                    worksheet.Cells[row, 13].Value = item.ItemDetail?.ManufactureDate.ToString("yyyy-MM-dd");
+                    worksheet.Cells[row, 14].Value = item.ItemDetail?.ExpiryDate.ToString("yyyy-MM-dd");
+                    worksheet.Cells[row, 15].Value = item.CategoryId;
+                    worksheet.Cells[row, 16].Value = item.Category?.Name;
+                    worksheet.Cells[row, 17].Value = item.SupplierId;
+                    worksheet.Cells[row, 18].Value = item.Supplier?.Name;
+                    worksheet.Cells[row, 19].Value = item.UserId;
+                    worksheet.Cells[row, 20].Value = item.User.UserName;
+                    worksheet.Cells[row, 21].Value = item.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                    worksheet.Cells[row, 22].Value = item.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                    row++;
+                }
+
+                var stream = new MemoryStream();
+                package.SaveAs(stream);
+                stream.Position = 0;
+
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                var fileName = $"{label}-{DateTime.Now.ToString()}.xlsx";
+                return File(stream, contentType, fileName);
+            }
+        }
+
+        public async Task<IActionResult> ExportToCsv(List<Item> items, string label)
+        {
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add(label);
+                worksheet.Cells["A1"].LoadFromCollection(items, true);
+
+                var stream = new MemoryStream();
+                package.SaveAs(stream);
+                stream.Position = 0;
+
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                var fileName = $"{label}-{DateTime.Now.ToString()}.xlsx";
+                return File(stream, contentType, fileName);
+            }
         }
     }
 }

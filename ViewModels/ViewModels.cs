@@ -1,4 +1,5 @@
 ﻿using InventoryManager2.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace InventoryManager2.ViewModels
 {
@@ -24,9 +25,10 @@ namespace InventoryManager2.ViewModels
         public string? Dimensions { get; set; } // e.g. "10x10x10 cm"
         public string? Material { get; set; }
         public string? Color { get; set; }
+        public DateTime ManufactureDate { get; set; }
+        public DateTime ExpiryDate { get; set; }
         public string? CountryOfOrigin { get; set; }
         public int ItemId { get; set; }
-        public DateTime? ManufactureDate { get; set; }
-        public DateTime? ExpiryDate { get; set; }
+
     }
 }
