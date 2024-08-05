@@ -1,22 +1,29 @@
 ﻿using InventoryManager2.Models;
-using System.ComponentModel.DataAnnotations;
 
 namespace InventoryManager2.ViewModels
 {
-    public class ItemViewModel
+    public class ItemVM
     {
         public string? Name { get; set; }
         public string? Description { get; set; }
         public Item.ItemStatus Status { get; set; }
-        public int ItemDetiailId { get; set; }
-        public ItemDetailViewModel ItemDetail { get; set; }
+        public ItemDetailVM ItemDetail { get; set; }
+        public CategoryVM? Category { get; set; }
+        public SupplierVM? Supplier { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+    public class CreateUpdateItemVM
+    {
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public Item.ItemStatus Status { get; set; }
+        public ItemDetailVM ItemDetail { get; set; }
         public int? CategoryId { get; set; }
-        public Category? Category { get; set; }
         public int? SupplierId { get; set; }
-        public Supplier? Supplier { get; set; }
     }
 
-    public class ItemDetailViewModel
+    public class ItemDetailVM
     {
         public int? Quantity { get; set; }
         public decimal? Price { get; set; }
@@ -29,6 +36,6 @@ namespace InventoryManager2.ViewModels
         public DateTime ExpiryDate { get; set; }
         public string? CountryOfOrigin { get; set; }
         public int ItemId { get; set; }
-
     }
+    
 }

@@ -6,10 +6,8 @@ namespace InventoryManager2.ViewModels
 {
     public class SupplierVM
     {
-        [DisplayName("Indentifiant")]
         public int Id { get; set; }
 
-        [DisplayName("Nom")]
         public string Name { get; set; }
 
         public string ContactInfo { get; set; }
