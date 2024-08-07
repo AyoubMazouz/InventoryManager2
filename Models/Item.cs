@@ -7,15 +7,17 @@ namespace InventoryManager2.Models
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Le champ \"Nom\" est obligatoire.")]
-        [StringLength(100, ErrorMessage = "Le champ \"Nom\" doit avoir une longueur maximale de 100 caractères.")]
+        [Required]
+        [StringLength(100)]
         public string? Name { get; set; }
 
-        [StringLength(500, ErrorMessage = "Le champ \"Description\" doit avoir une longueur maximale de 500 caractères.")]
+        [StringLength(500)]
         public string? Description { get; set; }
 
-        [Required(ErrorMessage = "Le champ \"Statut\" est obligatoire.")]
+        [Required]
         public ItemStatus Status { get; set; }
+
+        public List<CustomField>? CustomFields { get; set; }
 
         [Required]
         public int ItemDetailId { get; set; }

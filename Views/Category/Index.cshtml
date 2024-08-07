@@ -1,41 +1,109 @@
-﻿@model IEnumerable<InventoryManager2.Models.Category>
+﻿@model IEnumerable<InventoryManager2.ViewModels.CategoryVM>
 
 @{
-    ViewData["Title"] = "Category";
+    ViewData["Title"] = "Catégorie";
 }
 
-<h1>Index</h1>
+@* Options *@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <form method="get" action="@Url.Action("Index")" class="d-flex">
+        <input type="text" name="search" value="@ViewBag.search" class="form-control me-2" placeholder="Rechercher par nom">
+        <button class="btn btn-outline-primary" type="submit">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+    </form>
+    <div class="d-flex align-items-center gap-3">
+        <form method="post" asp-action="Export" class="d-inline">
+            <div class="form-group d-inline-flex align-items-center">
+                <select id="exportType" name="exportType" class="form-select me-2">
+                    <option value="xlsx">Excel (.xlsx)</option>
+                    <option value="csv">CSV (.csv)</option>
+                </select>
+                <button type="submit" class="btn btn-outline-primary">Exporter</button>
+            </div>
+        </form>
+        <form method="post" asp-action="Import" class="d-inline">
+            <div class="form-group d-inline-flex align-items-center">
+                <button type="submit" disabled class="btn btn-primary">Importer</button>
+            </div>
+        </form>
+        <a asp-action="Create" class="btn btn-success me-2">Créer Nouveau</a>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Parent)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Parent.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+@* Data *@
+<div class="table-container">
+    <table class="table table-striped table-bordered caption-top">
+        <caption>Catégories</caption>
+        <thead class="bg-primary text-light">
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.Name)</th>
+                <th>@Html.DisplayNameFor(model => model.ParentName)</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.Name)</a>
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ParentName)
+                    </td>
+                    <td class="text-end">
+                        <div class="dropdown">
+                            <a class="btn btn-secondary dropdown-toggle btn-rounded" href="#" role="button" id="dropdownMenuButton"
+                               data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="dropdown-item d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-eye"></i> Voir
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="dropdown-item d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-pencil-alt"></i> Modifier
+                                </a>
+                                <a href="#" class="dropdown-item d-flex align-items-center gap-2" data-bs-toggle="modal"
+                                   data-bs-target="#deleteDialog" onclick="handleOpenDeleteDialog(@item.Id)">
+                                    <i class="fa-solid fa-trash"></i> Supprimer
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@* Dialog *@
+<div class="modal fade" id="deleteDialog" tabindex="-1" aria-labelledby="deleteDialogLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteDialogLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer cette catégorie ?
+            </div>
+            <div class="modal-footer">
+                <form id="deleteForm" method="post">
+                    <input type="hidden" id="deleteItemId" name="id" />
+                    <input type="submit" value="Supprimer" class="btn btn-danger" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function handleOpenDeleteDialog(id) {
+        $("#deleteItemId").val(id);
+        $("#deleteForm").attr("action", '@Url.Action("Delete")/' + id);
+    }
+</script>

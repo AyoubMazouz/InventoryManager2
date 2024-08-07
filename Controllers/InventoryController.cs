@@ -1,4 +1,5 @@
 ﻿using InventoryManager2.Data;
+using InventoryManager2.Data.Migrations;
 using InventoryManager2.Models;
 using InventoryManager2.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -33,18 +34,20 @@ namespace InventoryManager2.Controllers
                 "Nom complet de l'utilisateur", "Date de création", "Date de mise à jour"
             };
 
-        public IActionResult Index()
+        public IActionResult Index(string search)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
-
             var items = _context.Items
                 .Include(i => i.Category)
                 .Include(i => i.Supplier)
                 .Include(i => i.ItemDetail)
                 .Where(i => i.UserId == userId)
-                .ToList();
+                .AsQueryable();
 
-            return View(items);
+            if (!string.IsNullOrEmpty(search))
+                items = items.Where(c => c.Name.Contains(search));
+
+            return View(items.ToList());
         }
 
         public IActionResult Details(int id)
@@ -54,9 +57,9 @@ namespace InventoryManager2.Controllers
                 .Include(i => i.Category)
                 .Include(i => i.Supplier)
                 .Include(i => i.ItemDetail)
-                .FirstOrDefault(i => i.Id == id);
+                .FirstOrDefault(i => i.Id == id && i.UserId == userId);
 
-            if (item == null || item.UserId != userId) return NotFound();
+            if (item == null) return NotFound();
 
             return View(item);
         }
@@ -92,6 +95,12 @@ namespace InventoryManager2.Controllers
                 Status = model.Status,
                 CategoryId = model.CategoryId,
                 SupplierId = model.SupplierId,
+                CustomFields = model.CustomFields?.Select(field => new CustomField
+                {
+                    Name = field.Name,
+                    Value = field.Value,
+                    DataType = field.DataType,
+                }).ToList(),
                 ItemDetail = new ItemDetail
                 {
                     Quantity = model.ItemDetail.Quantity,
@@ -124,15 +133,45 @@ namespace InventoryManager2.Controllers
                 .Include(i => i.Category)
                 .Include(i => i.Supplier)
                 .Include(i => i.ItemDetail)
-                .FirstOrDefault(i => i.Id == id);
+                .Include(i => i.CustomFields)
+                .FirstOrDefault(i => i.Id == id && i.UserId == userId);
 
-            if (item == null || item.UserId != userId) return NotFound();
+            if (item == null) return NotFound();
+
+            var model = new CreateUpdateItemVM
+            {
+                Name = item.Name,
+                Description = item.Description,
+                Status = item.Status,
+                CategoryId = item.CategoryId,
+                SupplierId = item.SupplierId,
+                CustomFields = item.CustomFields?.Select(field => new CreateUpdateCustomFieldVM
+                {
+                    Name = field.Name,
+                    Value = field.Value,
+                    DataType = field.DataType,
+                }).ToList(),
+                ItemDetail = new ItemDetailVM
+                {
+                    Quantity = item.ItemDetail.Quantity,
+                    Price = item.ItemDetail.Price,
+                    Manufacturer = item.ItemDetail.Manufacturer,
+                    Weight = item.ItemDetail.Weight,
+                    Dimensions = item.ItemDetail.Dimensions,
+                    Material = item.ItemDetail.Material,
+                    Color = item.ItemDetail.Color,
+                    CountryOfOrigin = item.ItemDetail.CountryOfOrigin,
+                    ItemId = item.ItemDetail.ItemId,
+                    ManufactureDate = item.ItemDetail.ManufactureDate,
+                    ExpiryDate = item.ItemDetail.ExpiryDate,
+                },
+            };
 
             ViewBag.StatusList = this.GetStatusSelectList();
             ViewBag.Categories = new SelectList(_context.Category, "Id", "Name");
             ViewBag.Suppliers = new SelectList(_context.Supplier, "Id", "Name");
 
-            return View(item);
+            return View(model);
         }
 
         [HttpPost]
@@ -150,10 +189,13 @@ namespace InventoryManager2.Controllers
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var item = _context.Items
+                .Include(i => i.Category)
+                .Include(i => i.Supplier)
                 .Include(i => i.ItemDetail)
-                .FirstOrDefault(i => i.Id == id);
+                .Include(i => i.CustomFields)
+                .FirstOrDefault(i => i.Id == id && i.UserId == userId);
 
-            if (item == null || item.UserId != userId) return NotFound();
+            if (item == null) return NotFound();
 
             item.Name = model.Name;
             item.Description = model.Description;
@@ -172,6 +214,34 @@ namespace InventoryManager2.Controllers
             item.ItemDetail.ManufactureDate = model.ItemDetail.ManufactureDate;
             item.ItemDetail.ExpiryDate = model.ItemDetail.ExpiryDate;
 
+            var existingCustomFields = item.CustomFields ?? new List<CustomField>();
+            var updatedCustomFields = model.CustomFields ?? new List<CreateUpdateCustomFieldVM>();
+
+            foreach (var field in updatedCustomFields)
+            {
+                var existingField = existingCustomFields.FirstOrDefault(f => f.Name == field.Name);
+                if (existingField != null)
+                {
+                    existingField.Value = field.Value;
+                    existingField.DataType = field.DataType;
+                    _context.CustomFields.Update(existingField);
+                }
+                else
+                    item.CustomFields.Add(new CustomField
+                    {
+                        Name = field.Name,
+                        Value = field.Value,
+                        DataType = field.DataType,
+                        ItemId = item.Id
+                    });
+            }
+
+            foreach (var field in existingCustomFields)
+            {
+                if (!updatedCustomFields.Any(f => f.Name == field.Name))
+                    _context.CustomFields.Remove(field);
+            }
+
             _context.Items.Update(item);
             _context.SaveChanges();
 
@@ -187,9 +257,9 @@ namespace InventoryManager2.Controllers
                 .Include(i => i.Category)
                 .Include(i => i.Supplier)
                 .Include(i => i.ItemDetail)
-                .FirstOrDefault(i => i.Id == id);
+                .FirstOrDefault(i => i.Id == id && i.UserId == userId);
 
-            if (item == null || item.UserId != userId) return NotFound();
+            if (item == null) return NotFound();
 
             return View(item);
         }
@@ -200,13 +270,17 @@ namespace InventoryManager2.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var item = _context.Items
-                .Include(i => i.Category)
-                .FirstOrDefault(i => i.Id == id);
+                .Include(i => i.ItemDetail)
+                .Include(i => i.CustomFields)
+                .FirstOrDefault(i => i.Id == id && i.UserId == userId);
 
-            if (item == null || item.UserId != userId) return NotFound();
+            if (item == null) return NotFound();
 
             if (item.ItemDetail != null)
                 _context.ItemDetails.Remove(item.ItemDetail);
+
+            if (item.CustomFields != null)
+                _context.CustomFields.RemoveRange(item.CustomFields);
 
             _context.Items.Remove(item);
             _context.SaveChanges();
@@ -217,6 +291,7 @@ namespace InventoryManager2.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Export(string exportType)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -226,6 +301,7 @@ namespace InventoryManager2.Controllers
                 .Include(i => i.Category)
                 .Include(i => i.Supplier)
                 .Include(i => i.ItemDetail)
+                .Include(i => i.CustomFields)
                 .ToList();
             
             if (items.Count == 0) return NotFound();
@@ -239,19 +315,6 @@ namespace InventoryManager2.Controllers
                 default:
                     return BadRequest("Invalid export type.");
             }
-        }
-
-        public SelectList GetStatusSelectList()
-        {
-            return new SelectList(
-                Enum.GetValues(typeof(Item.ItemStatus))
-                .Cast<Item.ItemStatus>()
-                .Select(e => new SelectListItem
-                {
-                    Value = ((int)e).ToString(),
-                    Text = e.ToString()
-                }
-            ).ToList(), "Value", "Text");
         }
 
         public IActionResult ExportToExcel(List<Item> items)
@@ -345,6 +408,19 @@ namespace InventoryManager2.Controllers
             var bytes = Encoding.UTF32.GetBytes(csv.ToString());
 
             return File(bytes, contentType, fileName);
+        }
+
+        public SelectList GetStatusSelectList()
+        {
+            return new SelectList(
+                Enum.GetValues(typeof(Item.ItemStatus))
+                .Cast<Item.ItemStatus>()
+                .Select(e => new SelectListItem
+                {
+                    Value = ((int)e).ToString(),
+                    Text = e.ToString()
+                }
+            ).ToList(), "Value", "Text");
         }
     }
 }

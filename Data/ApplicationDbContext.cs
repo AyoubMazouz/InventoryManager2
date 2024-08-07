@@ -10,6 +10,7 @@ namespace InventoryManager2.Data
 
         public DbSet<Item> Items { get; set; }
         public DbSet<ItemDetail> ItemDetails { get; set; }
+        public DbSet<CustomField> CustomFields { get; set; }
         public DbSet<Category> Category { get; set; }
         public DbSet<Supplier> Supplier { get; set; }
 
@@ -46,6 +47,12 @@ namespace InventoryManager2.Data
                 .WithMany(c => c.Children)
                 .HasForeignKey(c => c.ParentId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<CustomField>()
+                .HasOne(i => i.Item)
+                .WithMany(i => i.CustomFields)
+                .HasForeignKey(i => i.ItemId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Configuration
             modelBuilder.Entity<ItemDetail>()

@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Inventory Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.css" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/inventoryManager.styles.css" asp-append-version="true" />
@@ -15,66 +16,88 @@
 
     @if (TempData["Alert.Message"] != null)
     {
-        <div class="alert @TempData["Alert.Type"]">
-            @TempData["Alert.Message"]
+        <div class="alert @TempData["Alert.Type"] alert-dismissible fade show w-75 mt-3 d-flex justify-content-between align-items-center position-absolute top-50 translate-middle-y"
+             role="alert" style="z-index: 1050; left: 50%; transform: translateX(-50%);">
+            <p>@TempData["Alert.Message"]</p>
+            <button onclick="handleAlertOnClose()" class="btn btn-outline-secondary" data-dismiss="alert" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
     }
 
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    <header class="bg-light">
+        <nav class="navbar container navbar-expand-lg navbar-light">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">inventoryManager</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand text-decoration-underline me-5" href="#"><span class="fw-bold text-primary">I</span>Manager</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between mx-auto">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
+                <div class="collapse navbar-collapse d-flex justify-content-between w-100" id="navbarScroll">
+                    <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll collapse navbar-collapse" style="--bs-scroll-height: 100px;">
+                        <li class="nav-item d-flex align-items-center me-2">
+                            <i class="fa-solid fa-house"></i>
+                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item d-flex align-items-center me-2">
+                            <i class="fa-solid fa-warehouse"></i>
                             <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Index">Inventory</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Category" asp-action="Index">Categories</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Supplier" asp-action="Index">Suppliers</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        <li class="nav-item dropdown d-flex align-items-center me-2">
+                            <i class="fa-solid fa-sliders"></i>
+                            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Settings
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
+                                <a class="dropdown-item d-flex align-items-center text-decoration-none text-dark" asp-controller="Category" asp-action="Index">
+                                    <i class="fa-solid fa-list me-2"></i>
+                                    Categories
+                                    </a>
+                                <a class="dropdown-item d-flex align-items-center text-decoration-none text-dark" asp-controller="Supplier" asp-action="Index">
+                                    <i class="fa-solid fa-boxes-packing me-2"></i>
+                                    Suppliers
+                                </a>
+                            </ul>
                         </li>
                     </ul>
-                    <ul class="navbar-nav justify-items-end align-items-center">
-                        @if (User.Identity?.IsAuthenticated ?? false)
-                    {
-                        <li class="nav-item">
-                            <p>Hello, @UserManager.GetUserName(User)</p>
-                        </li>
-                        <li class="nav-item">
-                        <form id="account" method="post" asp-area="Identity" asp-page="/Account/Logout">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="nav-link btn btn-link" style="padding: 0; border: none; background: none;">Logout</button>
-                        </form>
-                        </li>
-                    }
-                    else
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link text-success" asp-area="Identity" asp-page="/Account/Login">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-info" asp-area="Identity" asp-page="/Account/Register">Register</a>
-                        </li>
-                    }
-                    </ul>
+                    <div class="nav-item dropstart">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="https://s3.eu-central-1.amazonaws.com/bootstrapbaymisc/blog/24_days_bootstrap/fox.jpg" width="40" height="40" class="rounded-circle">
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                    @if (User.Identity?.IsAuthenticated ?? false)
+                                    {
+                                    <li class="dropdown-item d-flex align-items-center justify-items-center">
+                                        <img src="https://s3.eu-central-1.amazonaws.com/bootstrapbaymisc/blog/24_days_bootstrap/fox.jpg" width="40" height="40" class="rounded-circle">
+                                        <div class="ms-2 fw-bold">@UserManager.GetUserName(User)</div>
+                                    </li>
+                                    <form id="account" method="post" asp-area="Identity" asp-page="/Account/Logout"
+                                          class="dropdown-item">
+                                                @Html.AntiForgeryToken()
+
+                                    <button type="submit" class="text-danger d-flex align-items-center" style="padding: 0; border: none; background: none;">
+                                        <i class="fa-solid fa-right-from-bracket text-danger me-2"></i>
+                                        Logout
+                                    </button>
+                                    </form>
+                                    }
+                                    else
+                                    {
+                                <a class="dropdown-item d-flex align-items-center text-success" asp-area="Identity" asp-page="/Account/Login">
+                                    <i class="fa-solid fa-right-to-bracket me-2"></i>
+                                    Login
+                                </a>
+                                <a class="dropdown-item d-flex align-items-center text-info" asp-area="Identity" asp-page="/Account/Register">
+                                    <i class="fa-solid fa-user-plus text-info me-2"></i>
+                                    Register</a>
+                                    }
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-            </div>
         </nav>
     </header>
     <div class="container">
-        <main role="main" class="pb-3">
+        <main role="main" class="py-3">
             @RenderBody()
         </main>
     </div>
@@ -84,9 +107,15 @@
             &copy; 2024 - inventoryManager - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        function handleAlertOnClose() {
+            $('div[role="alert"]').remove();
+        }
+    </script>
 </body>
 </html>

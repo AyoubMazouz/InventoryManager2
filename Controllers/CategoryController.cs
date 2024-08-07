@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using InventoryManager2.Data;
 using InventoryManager2.Models;
 using InventoryManager2.ViewModels;
+using OfficeOpenXml;
+using System.Text;
 
 namespace InventoryManager2.Controllers
 {
@@ -16,13 +18,29 @@ namespace InventoryManager2.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        private readonly List<string> headers = new List<string>
+        {
+            "Id", "Nom", "Parent", "Date de création", "Date de mise à jour"
+        };
+
+        public IActionResult Index(string search)
         {
             var categories = _context.Category
                 .Include(c => c.Parent)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+                categories = categories.Where(c => c.Name.Contains(search));
+
+            var models = categories.Select(c => new CategoryVM
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    ParentName = c.Parent.Name ?? ""
+                })
                 .ToList();
 
-            return View(categories);
+            return View(models);
         }
 
         public IActionResult Details(int id)
@@ -34,7 +52,14 @@ namespace InventoryManager2.Controllers
 
             if (category == null) return NotFound();
 
-            return View(category);
+            var model = new CategoryVM
+            { 
+                Name = category.Name,
+                Parent = category.Parent,
+                Children = category.Children,
+            };
+
+            return View(model);
         }
 
         public IActionResult Create()
@@ -60,12 +85,11 @@ namespace InventoryManager2.Controllers
                 Name = model.Name,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
-                /*ParentId = model.ParentId,*/
+                ParentId = model.ParentId
             };
-            if (parent != null) category.Parent = parent;
 
             _context.Add(category);
-            _context.SaveChangesAsync();
+            _context.SaveChanges();
 
             this.Flash($"New category named {category.Name} has been created!");
 
@@ -116,21 +140,9 @@ namespace InventoryManager2.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Delete(int id)
-        {
-            var category = _context.Category
-                .Include(c => c.Parent)
-                .Include(c => c.Children)
-                .FirstOrDefault(m => m.Id == id);
-
-            if (category == null) return NotFound();
-
-            return View(category);
-        }
-
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public IActionResult Delete(int id)
         {
             var category = _context.Category.Find(id);
 
@@ -151,6 +163,84 @@ namespace InventoryManager2.Controllers
             this.Flash($"category named {category.Name} has been Deleted Successfully!");
 
             return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Export(string exportType)
+        {
+            var categories = _context.Category
+                .Include(c => c.Parent)
+                .ToList();
+
+            if (categories.Count == 0) return NotFound();
+
+            switch (exportType.ToLower())
+            {
+                case "xlsx":
+                    return this.ExportToExcel(categories);
+                case "csv":
+                    return this.ExportToCsv(categories);
+                default:
+                    return BadRequest("Invalid export type.");
+            }
+        }
+
+        public IActionResult ExportToExcel(List<Category> categories)
+        {
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Categories");
+
+                for (int i = 0; i < this.headers.Count; i++)
+                {
+                    worksheet.Cells[1, i + 1].Value = this.headers[i];
+                }
+
+                int row = 2;
+                foreach (var category in categories)
+                {
+                    worksheet.Cells[row, 1].Value = category.Id;
+                    worksheet.Cells[row, 2].Value = category.Name;
+                    worksheet.Cells[row, 3].Value = category.Parent?.Name ?? "N/A";
+                    worksheet.Cells[row, 4].Value = category.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                    worksheet.Cells[row, 5].Value = category.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                    row++;
+                }
+
+                var stream = new MemoryStream();
+                package.SaveAs(stream);
+                stream.Position = 0;
+
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                var fileName = $"Categories-{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                return File(stream, contentType, fileName);
+            }
+        }
+
+        public IActionResult ExportToCsv(List<Category> categories)
+        {
+            var csv = new StringBuilder();
+
+            csv.AppendLine(string.Join(",", this.headers));
+
+            foreach (var category in categories)
+            {
+                var row = new List<string>
+                {
+                    category.Id.ToString(),
+                    category.Name ?? "",
+                    category.Parent?.Name ?? "N/A",
+                    category.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                    category.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                };
+
+                csv.AppendLine(string.Join(",", row));
+            }
+
+            var fileName = $"Categories-{DateTime.Now:yyyyMMddHHmmss}.csv";
+            var contentType = "text/csv";
+            var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+
+            return File(bytes, contentType, fileName);
         }
 
         private bool CategoryExists(int id)

@@ -6,22 +6,6 @@
 
 <h1>Détails de l'article</h1>
 
-<div class="d-flex justify-content-center align-items-center w-full">
-    <p>
-        <a asp-action="Create">Créer Nouveau</a>
-    </p>
-    <form method="post" asp-action="Export">
-        <div class="form-group">
-            <label for="exportType">Sélectionnez le type d'exportation</label>
-            <select id="exportType" name="exportType" class="form-control">
-                <option value="xlsx">Excel (.xlsx)</option>
-                <option value="csv">CSV (.csv)</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Exporter</button>
-    </form>
-</div>
-
 <dl class="row">
     <dt class="col-sm-2">Nom</dt>
     <dd class="col-sm-10">@Model?.Name</dd>

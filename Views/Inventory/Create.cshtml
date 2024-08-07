@@ -1,106 +1,191 @@
-﻿@model InventoryManager2.Models.Item
+﻿@model InventoryManager2.ViewModels.CreateUpdateItemVM
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Créer";
 }
 
-<h1>Create</h1>
+<div class="d-flex justify-content-between align-items-end">
+    <a asp-action="Index"><i class="fa-solid fa-angle-left me-2"></i>Retour à la liste</a>
 
-<h4>Item</h4>
+    <h1>Créer un nouvel article</h1>
+
+    <div></div>
+</div>
+
 <hr />
+
 <div class="row">
     <div class="col-md-8 mx-auto">
         <form asp-action="Create" class="row">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
+
+            <div class="form-group col-12 mt-2">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2 col-6">
+
+            <div class="form-group col-6 mt-2">
                 <label asp-for="ItemDetail.Price" class="control-label"></label>
                 <input asp-for="ItemDetail.Price" class="form-control" type="number" />
                 <span asp-validation-for="ItemDetail.Price" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2 col-6">
+            <div class="form-group col-6 mt-2">
                 <label asp-for="ItemDetail.Quantity" class="control-label"></label>
                 <input asp-for="ItemDetail.Quantity" class="form-control" />
                 <span asp-validation-for="ItemDetail.Quantity" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2 col-4">
+            <div class="form-group col-4 mt-2">
                 <label asp-for="Status" class="control-label"></label>
                 <select asp-for="Status" class="form-control" asp-items="ViewBag.StatusList"></select>
                 <span asp-validation-for="Status" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2 col-4">
+            <div class="form-group col-4 mt-2">
                 <label asp-for="CategoryId" class="control-label"></label>
                 <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.Categories"></select>
                 <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2 col-4">
+            <div class="form-group col-4 mt-2">
                 <label asp-for="SupplierId" class="control-label"></label>
                 <select asp-for="SupplierId" class="form-control" asp-items="ViewBag.Suppliers"></select>
                 <span asp-validation-for="SupplierId" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2 col-4">
+            <div class="form-group col-4 mt-2">
                 <label asp-for="ItemDetail.Color" class="control-label"></label>
                 <input asp-for="ItemDetail.Color" class="form-control" />
                 <span asp-validation-for="ItemDetail.Color" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2 col-4">
+            <div class="form-group col-4 mt-2">
                 <label asp-for="ItemDetail.ManufactureDate" class="control-label"></label>
                 <input asp-for="ItemDetail.ManufactureDate" class="form-control" />
                 <span asp-validation-for="ItemDetail.ManufactureDate" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2 col-4">
+            <div class="form-group col-4 mt-2">
                 <label asp-for="ItemDetail.ExpiryDate" class="control-label"></label>
                 <input asp-for="ItemDetail.ExpiryDate" class="form-control" />
                 <span asp-validation-for="ItemDetail.ExpiryDate" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2">
-                <label asp-for="ItemDetail.CountryOfOrigin" class="control-label"></label>
-                <input asp-for="ItemDetail.CountryOfOrigin" class="form-control" />
-                <span asp-validation-for="ItemDetail.CountryOfOrigin" class="text-danger"></span>
-            </div>
-            <div class="form-group mt-2">
-                <label asp-for="ItemDetail.Manufacturer" class="control-label"></label>
-                <input asp-for="ItemDetail.Manufacturer" class="form-control" />
-                <span asp-validation-for="ItemDetail.Manufacturer" class="text-danger"></span>
-            </div>
-            <div class="form-group mt-2 col-4">
+            <div class="form-group col-4 mt-2">
                 <label asp-for="ItemDetail.Weight" class="control-label"></label>
                 <input asp-for="ItemDetail.Weight" class="form-control" type="number" />
                 <span asp-validation-for="ItemDetail.Weight" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2 col-4">
+            <div class="form-group col-4 mt-2">
                 <label asp-for="ItemDetail.Dimensions" class="control-label"></label>
                 <input asp-for="ItemDetail.Dimensions" class="form-control" />
                 <span asp-validation-for="ItemDetail.Dimensions" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2 col-4">
+            <div class="form-group col-4 mt-2">
                 <label asp-for="ItemDetail.Material" class="control-label"></label>
                 <input asp-for="ItemDetail.Material" class="form-control" />
                 <span asp-validation-for="ItemDetail.Material" class="text-danger"></span>
             </div>
-            <div class="form-group mt-2">
+            <div class="form-group col-6 mt-2">
+                <label asp-for="ItemDetail.CountryOfOrigin" class="control-label"></label>
+                <input asp-for="ItemDetail.CountryOfOrigin" class="form-control" />
+                <span asp-validation-for="ItemDetail.CountryOfOrigin" class="text-danger"></span>
+            </div>
+            <div class="form-group col-6 mt-2">
+                <label asp-for="ItemDetail.Manufacturer" class="control-label"></label>
+                <input asp-for="ItemDetail.Manufacturer" class="form-control" />
+                <span asp-validation-for="ItemDetail.Manufacturer" class="text-danger"></span>
+            </div>
+            <div class="form-group col-12 mt-2">
                 <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
 
-            <div class="form-group mt-2">
-                <input type="submit" value="Create" class="btn btn-primary" />
+            <!-- Custom Fields -->
+            <div id="customFieldsContainer" class="form-group col-12 row mt-2">
+                <!-- Custom fields will be added here -->
+            </div>
+
+            <div class="form-group d-flex justify-content-between col-12 mt-3">
+                <button type="button" class="btn btn-success" id="addCustomFieldBtn">Ajouter un champ personnalisé</button>
+                <input type="submit" value="Créer" class="btn btn-primary" />
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#addCustomFieldBtn').click(function () {
+                const container = $('#customFieldsContainer');
+                const lastField = container.children().last();
+
+                if (lastField.length === 0
+                    || (lastField.find('input[name$=".Name"]').val()
+                        && lastField.find('input[name$=".Value"]').val())) {
+                    addCustomField(container);
+                }
+                else {
+                    alert('Veuillez remplir le champ personnalisé précédent avant d\'en ajouter un nouveau.');
+                }
+            });
+
+            function addCustomField(container) {
+                const fieldIndex = container.children().length;
+                const fieldDiv = $('<div class="custom-field row p-3 col-12 border rounded-2 m-2"></div>');
+
+                const fieldNameDiv = $('<div class="col-md-3"></div>');
+                const fieldNameLabel = $('<label for="CustomFields_' + fieldIndex + '__Name" class="form-label">Nom du champ</label>');
+                const fieldNameInput = $('<input type="text" class="form-control" placeholder="Nom du champ" />');
+                fieldNameInput.attr('name', `CustomFields[${fieldIndex}].Name`);
+                fieldNameInput.attr('id', `CustomFields_${fieldIndex}__Name`);
+                fieldNameDiv.append(fieldNameLabel);
+                fieldNameDiv.append(fieldNameInput);
+
+                const fieldValueDiv = $('<div class="col-md-3"></div>');
+                const fieldValueLabel = $('<label for="CustomFields_' + fieldIndex + '__Value" class="form-label">Valeur du champ</label>');
+                const fieldValueInput = $('<input type="text" class="form-control" placeholder="Valeur du champ" />');
+                fieldValueInput.attr('name', `CustomFields[${fieldIndex}].Value`);
+                fieldValueInput.attr('id', `CustomFields_${fieldIndex}__Value`);
+                fieldValueDiv.append(fieldValueLabel);
+                fieldValueDiv.append(fieldValueInput);
+
+                const dataTypeDiv = $('<div class="col-md-3"></div>');
+                const dataTypeLabel = $('<label for="CustomFields_' + fieldIndex + '__DataType" class="form-label">Type de données</label>');
+                const dataTypeInput = $('<input type="text" class="form-control" placeholder="Type de données" />');
+                dataTypeInput.attr('name', `CustomFields[${fieldIndex}].DataType`);
+                dataTypeInput.attr('id', `CustomFields_${fieldIndex}__DataType`);
+                dataTypeDiv.append(dataTypeLabel);
+                dataTypeDiv.append(dataTypeInput);
+
+                const deleteButtonDiv = $('<div class="col-md-3 d-flex align-items-end"></div>');
+                const deleteButton = $('<button type="button" class="btn btn-danger">Supprimer</button>');
+                deleteButton.click(function () {
+                    fieldDiv.remove();
+                    updateFieldNames(container);
+                });
+                deleteButtonDiv.append(deleteButton);
+
+                fieldDiv.append(fieldNameDiv);
+                fieldDiv.append(fieldValueDiv);
+                fieldDiv.append(dataTypeDiv);
+                fieldDiv.append(deleteButtonDiv);
+
+                container.append(fieldDiv);
+            }
+
+            function updateFieldNames(container) {
+                container.children('.custom-field').each(function (index) {
+                    $(this).find('input').each(function () {
+                        var name = $(this).attr('name');
+                        var id = $(this).attr('id');
+                        var newName = name.replace(/\[\d+\]/, `[${index}]`);
+                        var newId = id.replace(/_\d+__/, `_${index}__`);
+                        $(this).attr('name', newName);
+                        $(this).attr('id', newId);
+                    });
+                });
+            }
+        });
+    </script>
 }

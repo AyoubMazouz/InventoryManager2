@@ -1,4 +1,4 @@
-﻿@model InventoryManager2.Models.Item
+﻿@model InventoryManager2.ViewModels.CreateUpdateItemVM
 
 @{
     ViewData["Title"] = "Edit";
@@ -12,7 +12,6 @@
     <div class="col-md-8 mx-auto">
         <form asp-action="Edit" class="row">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
@@ -89,6 +88,26 @@
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
 
+            <!-- Custom Fields Section -->
+            <div class="form-group mt-2">
+                <div id="customFieldsContainer">
+                    @for (int i = 0; i < Model.CustomFields?.Count; i++)
+                    {
+                        <div class="custom-field" data-index="@i">
+                            <div class="form-group">
+                                <input type="hidden" asp-for="CustomFields[i].DataType" />
+                                <input type="hidden" asp-for="CustomFields[i].Name" />
+                                <label asp-for="CustomFields[i].Value" class="control-label">@Model.CustomFields[i].Name</label>
+                                <input asp-for="CustomFields[i].Value" class="form-control" />
+                                <span asp-validation-for="CustomFields[i].Value" class="text-danger"></span>
+                            </div>
+                            <button type="button" class="btn btn-danger remove-custom-field">Remove</button>
+                        </div>
+                    }
+                </div>
+                <button type="button" class="btn btn-success mt-2" id="addCustomField">Add Custom Field</button>
+            </div>
+
             <div class="form-group mt-2">
                 <input type="submit" value="Update" class="btn btn-primary" />
             </div>
@@ -101,5 +120,55 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function () {
+            $('#addCustomField').click(function () {
+                const index = $('#customFieldsContainer .custom-field').length;
+                const newField = `
+                            <div class="custom-field" data-index="${index}">
+                                <input type="hidden" name="CustomFields[${index}].Id" value="0" />
+                                <div class="form-group">
+                                    <label for="CustomFields_${index}__Name" class="control-label">Name</label>
+                                        <input name="CustomFields[${index}].Name" class="form-control" id="CustomFields_${index}__Name" />
+                                    <span class="text-danger" data-valmsg-for="CustomFields[${index}].Key" data-valmsg-replace="true"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="CustomFields_${index}__DataType" class="control-label">DataType</label>
+                                        <input name="CustomFields[${index}].DataType" class="form-control" id="CustomFields_${index}__DataType" />
+                                    <span class="text-danger" data-valmsg-for="CustomFields[${index}].DataType" data-valmsg-replace="true"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="CustomFields_${index}__Value" class="control-label">Value</label>
+                                    <input name="CustomFields[${index}].Value" class="form-control" id="CustomFields_${index}__Value" />
+                                    <span class="text-danger" data-valmsg-for="CustomFields[${index}].Value" data-valmsg-replace="true"></span>
+                                </div>
+                                <button type="button" class="btn btn-danger remove-custom-field">Remove</button>
+                            </div>`;
+                $('#customFieldsContainer').append(newField);
+            });
+
+            $(document).on('click', '.remove-custom-field', function () {
+                $(this).closest('.custom-field').remove();
+                $('#customFieldsContainer .custom-field').each(function (index) {
+                    $(this).attr('data-index', index);
+                    $(this).find('input, label, span').each(function () {
+                        const oldName = $(this).attr('name');
+                        const oldId = $(this).attr('id');
+                        if (oldName) {
+                            const newName = oldName.replace(/\[\d+\]/, `[${index}]`);
+                            $(this).attr('name', newName);
+                        }
+                        if (oldId) {
+                            const newId = oldId.replace(/_\d+__/g, `_${index}__`);
+                            $(this).attr('id', newId);
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 }
