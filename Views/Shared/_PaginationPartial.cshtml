@@ -1,11 +1,17 @@
-﻿@model PaginationViewModel<SupplierVM>
+﻿@model PaginationVM
 
-<nav aria-label="Page navigation">
+<nav aria-label="Page navigation" class="d-flex justify-content-center">
     <ul class="pagination justify-content-center">
         @if (Model.HasPreviousPage)
         {
             <li class="page-item">
-                <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageNumber - 1)" asp-route-search="@ViewBag.search" aria-label="Previous">
+                <a class="page-link" aria-label="Previous" 
+                    asp-action="Index" 
+                    asp-route-page="@(Model.PageNumber - 1)" 
+                    asp-route-search="@ViewBag.search"
+                    asp-route-pageSize="@ViewBag.pageSize"
+                    asp-route-sortBy="@ViewBag.sortBy"
+                    asp-route-sortDir="@ViewBag.sortDir">
                     <i class="fa-solid fa-chevron-left"></i>
                 </a>
             </li>
@@ -32,7 +38,15 @@
                 else
                 {
                     <li class="page-item">
-                        <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-search="@ViewBag.search">@i</a>
+                        <a class="page-link" 
+                            asp-action="Index" 
+                            asp-route-page="@i" 
+                            asp-route-search="@ViewBag.search" 
+                            asp-route-pageSize="@ViewBag.pageSize"
+                            asp-route-sortBy="@ViewBag.sortBy"
+                            asp-route-sortDir="@ViewBag.sortDir">
+                            @i
+                            </a>
                     </li>
                 }
             }
@@ -49,7 +63,13 @@
         @if (Model.HasNextPage)
         {
             <li class="page-item">
-                <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageNumber + 1)" asp-route-search="@ViewBag.search" aria-label="Next">
+                <a class="page-link" aria-label="Next" 
+                    asp-action="Index" 
+                    asp-route-page="@(Model.PageNumber + 1)"
+                    asp-route-search="@ViewBag.search"
+                    asp-route-pageSize="@ViewBag.pageSize"
+                    asp-route-sortBy="@ViewBag.sortBy"
+                    asp-route-sortDir="@ViewBag.sortDir">
                     <i class="fa-solid fa-chevron-right"></i>
                 </a>
             </li>

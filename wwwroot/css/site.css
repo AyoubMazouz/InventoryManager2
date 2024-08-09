@@ -20,3 +20,7 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.remove-dropdown-carrot::after {
+    display: none;
+}

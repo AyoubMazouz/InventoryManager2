@@ -30,7 +30,7 @@ namespace InventoryManager2.ViewModels
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public ItemDetailVM ItemDetail { get; set; }
-        public List<CreateUpdateCustomFieldVM>? CustomFields { get; set; }
+        public List<CustomFieldVM>? CustomFields { get; set; }
     }
 
     public class CreateUpdateItemVM

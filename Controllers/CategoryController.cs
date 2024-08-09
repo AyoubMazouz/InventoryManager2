@@ -23,16 +23,23 @@ namespace InventoryManager2.Controllers
             "Id", "Nom", "Parent", "Date de création", "Date de mise à jour"
         };
 
-        public IActionResult Index(string search)
+        public IActionResult Index(string search, int page = 1, int pageSize = 10, string sortBy = "Name", string sortDir = "asc")
         {
-            var categories = _context.Category
+            var categoryQuery = _context.Category
                 .Include(c => c.Parent)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
-                categories = categories.Where(c => c.Name.Contains(search));
+                categoryQuery = categoryQuery.Where(c => c.Name.Contains(search));
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 250) pageSize = 10;
 
-            var models = categories.Select(c => new CategoryVM
+            categoryQuery = ApplySorting(categoryQuery, sortBy, sortDir);
+
+            var categories = categoryQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(c => new CategoryVM
                 {
                     Id = c.Id,
                     Name = c.Name,
@@ -40,7 +47,21 @@ namespace InventoryManager2.Controllers
                 })
                 .ToList();
 
-            return View(models);
+            var pagination = new PaginationVM<CategoryVM>
+            {
+                Items = categories,
+                PageNumber = page,
+                PageSize = pageSize,
+                TotalItems = categoryQuery.Count()
+            };
+
+            ViewBag.search = search;
+            ViewBag.page = page;
+            ViewBag.pageSize = pageSize;
+            ViewBag.sortBy = sortBy;
+            ViewBag.sortDir = sortDir;
+
+            return View(pagination);
         }
 
         public IActionResult Details(int id)
@@ -252,5 +273,17 @@ namespace InventoryManager2.Controllers
         {
             return _context.Category.Any(p => p.ParentId == category.Id);
         }
+        private IQueryable<Category> ApplySorting(IQueryable<Category> query, string sortBy, string sortDir)
+        {
+            switch (sortBy.ToLower())
+            {
+                case "parentname":
+                    return sortDir == "asc" ? query.OrderBy(s => s.Parent.Name) : query.OrderByDescending(s => s.Parent.Name);
+                case "name":
+                default:
+                    return sortDir == "asc" ? query.OrderBy(s => s.Name) : query.OrderByDescending(s => s.Name);
+            }
+        }
+
     }
 }

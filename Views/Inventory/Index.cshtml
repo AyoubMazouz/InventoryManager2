@@ -1,4 +1,4 @@
-﻿@model IEnumerable<InventoryManager2.Models.Item>
+﻿@model PaginationVM<ItemVM>
 
 @{
     ViewData["Title"] = "Index";
@@ -6,12 +6,94 @@
 
 @* Options *@
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <form method="get" action="@Url.Action("Index")" class="d-flex">
-        <input type="text" name="search" value="@ViewBag.search" class="form-control me-2" placeholder="Rechercher par nom">
-        <button class="btn btn-outline-primary" type="submit">
-            <i class="fa-solid fa-magnifying-glass"></i>
+    <div class="d-flex align-items-center gap-2">
+        @* Sort Dropdown *@
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle remove-dropdown-carrot"
+                    type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                @if (ViewBag.sortDir == "asc")
+                {
+                    <i class="fa-solid fa-arrow-up-wide-short"></i>
+                }
+                else
+                {
+                    <i class="fa-solid fa-arrow-down-short-wide"></i>
+                }
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                <li class="dropdown-item">
+                    <a asp-action="Index" class="text-decoration-none text-dark"
+                       asp-route-sortDir="asc"
+                       asp-route-sortBy="Name"
+                       asp-route-search="@ViewBag.search"
+                       asp-route-page="@ViewBag.page"
+                       asp-route-pageSize="@ViewBag.pageSize">
+                        @Html.DisplayNameFor(model => model.Items.First().Name) (Ascendant)
+                    </a>
+                </li>
+                <li class="dropdown-item">
+                    <a asp-action="Index" class="text-decoration-none text-dark"
+                       asp-route-sortDir="desc"
+                       asp-route-sortBy="Name"
+                       asp-route-search="@ViewBag.search"
+                       asp-route-page="@ViewBag.page"
+                       asp-route-pageSize="@ViewBag.pageSize">
+                        @Html.DisplayNameFor(model => model.Items.First().Name) (Descendant)
+                    </a>
+                </li>
+                <li class="dropdown-item">
+                    <a asp-action="Index" class="text-decoration-none text-dark"
+                       asp-route-sortDir="asc"
+                       asp-route-sortBy="Price"
+                       asp-route-search="@ViewBag.search"
+                       asp-route-page="@ViewBag.page"
+                       asp-route-pageSize="@ViewBag.pageSize">
+                        @Html.DisplayNameFor(model => model.Items.First().ItemDetail.Price) (Ascendant)
+                    </a>
+                </li>
+                <li class="dropdown-item">
+                    <a asp-action="Index" class="text-decoration-none text-dark"
+                       asp-route-sortDir="desc"
+                       asp-route-sortBy="Price"
+                       asp-route-search="@ViewBag.search"
+                       asp-route-page="@ViewBag.page"
+                       asp-route-pageSize="@ViewBag.pageSize">
+                        @Html.DisplayNameFor(model => model.Items.First().ItemDetail.Price) (Descendant)
+                    </a>
+                </li>
+                <li class="dropdown-item">
+                    <a asp-action="Index" class="text-decoration-none text-dark"
+                       asp-route-sortDir="asc"
+                       asp-route-sortBy="Quantity"
+                       asp-route-search="@ViewBag.search"
+                       asp-route-page="@ViewBag.page"
+                       asp-route-pageSize="@ViewBag.pageSize">
+                        @Html.DisplayNameFor(model => model.Items.First().ItemDetail.Quantity) (Ascendant)
+                    </a>
+                </li>
+                <li class="dropdown-item">
+                    <a asp-action="Index" class="text-decoration-none text-dark"
+                       asp-route-sortDir="desc"
+                       asp-route-sortBy="Quantity"
+                       asp-route-search="@ViewBag.search"
+                       asp-route-page="@ViewBag.page"
+                       asp-route-pageSize="@ViewBag.pageSize">
+                        @Html.DisplayNameFor(model => model.Items.First().ItemDetail.Quantity) (Descendant)
+                    </a>
+                </li>
+            </ul>
+        </div>
+        @* Filter Trigger *@
+        <button data-bs-toggle="modal" data-bs-target="#filterDialog" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-filter"></i>
         </button>
-    </form>
+        <form method="get" action="@Url.Action("Index")" class="d-flex">
+            <input type="text" name="search" value="@ViewBag.search" class="form-control me-2" placeholder="Rechercher par nom">
+            <button class="btn btn-outline-secondary" type="submit">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </form>
+    </div>
     <div class="d-flex align-items-center gap-3">
         <form method="post" asp-action="Export" class="d-inline">
             <div class="form-group d-inline-flex align-items-center">
@@ -33,27 +115,85 @@
 
 @* Data *@
 <div class="table-container">
-    <table class="table table-striped table-bordered caption-top">
-        <caption>Articles</caption>
+    <table class="table table-striped table-bordered">
         <thead class="bg-primary text-light">
             <tr>
-                <th>@Html.DisplayNameFor(model => model.Name)</th>
-                <th>@Html.DisplayNameFor(model => model.Description)</th>
-                <th>@Html.DisplayNameFor(model => model.ItemDetail.Price)</th>
-                <th>@Html.DisplayNameFor(model => model.ItemDetail.Quantity)</th>
-                <th>@Html.DisplayNameFor(model => model.Status)</th>
+                <th>
+                    <a asp-action="Index" class="text-light text-decoration-none"
+                       asp-route-sortDir="@(ViewBag.sortDir == "asc" ? "desc" : "asc")"
+                       asp-route-search="@ViewBag.search"
+                       asp-route-page="@ViewBag.page"
+                       asp-route-pageSize="@ViewBag.pageSize"
+                       asp-route-sortBy="Name">
+                        @Html.DisplayNameFor(model => model.Items.First().Name)
+                    </a>
+                    @if (ViewBag.sortBy.ToLower() == "name")
+                    {
+                        @if (ViewBag.sortDir == "asc")
+                        {
+                            <i class="fa-solid fa-sort-down"></i>
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-sort-up"></i>
+                        }
+                    }
+                </th>
+                <th>
+                    <a asp-action="Index" class="text-light text-decoration-none"
+                       asp-route-sortDir="@(ViewBag.sortDir == "asc" ? "desc" : "asc")"
+                       asp-route-search="@ViewBag.search"
+                       asp-route-page="@ViewBag.page"
+                       asp-route-pageSize="@ViewBag.pageSize"
+                       asp-route-sortBy="Price">
+                        @Html.DisplayNameFor(model => model.Items.First().ItemDetail.Price)
+                    </a>
+                    @if (ViewBag.sortBy.ToLower() == "price")
+                    {
+                        @if (ViewBag.sortDir == "asc")
+                        {
+                            <i class="fa-solid fa-sort-down"></i>
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-sort-up"></i>
+                        }
+                    }
+                </th>
+                <th>
+                    <a asp-action="Index" class="text-light text-decoration-none"
+                       asp-route-sortDir="@(ViewBag.sortDir == "asc" ? "desc" : "asc")"
+                       asp-route-search="@ViewBag.search"
+                       asp-route-page="@ViewBag.page"
+                       asp-route-pageSize="@ViewBag.pageSize"
+                       asp-route-sortBy="Quantity">
+                        @Html.DisplayNameFor(model => model.Items.First().ItemDetail.Quantity)
+                    </a>
+                    @if (ViewBag.sortBy.ToLower() == "quantity")
+                    {
+                        @if (ViewBag.sortDir == "asc")
+                        {
+                            <i class="fa-solid fa-sort-down"></i>
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-sort-up"></i>
+                        }
+                    }
+                </th>
+                <th>
+                   @Html.DisplayNameFor(model => model.Items.First().Description)
+                </th>
+                <th class="text-center">@Html.DisplayNameFor(model => model.Items.First().Status)</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model)
+            @foreach (var item in Model.Items)
             {
                 <tr>
                     <td>
                         <a asp-action="Details" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.Name)</a>
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Description)
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.ItemDetail.Price)
@@ -62,13 +202,16 @@
                         @Html.DisplayFor(modelItem => item.ItemDetail.Quantity)
                     </td>
                     <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    <td class="text-center">
                         @{
                             var badgeClass = item.Status switch
                             {
                                 Item.ItemStatus.Available => "bg-success",
                                 Item.ItemStatus.OutOfStock => "bg-danger",
-                                Item.ItemStatus.Discontinued => "bg-secondary",
-                                Item.ItemStatus.PendingRestock => "bg-warning",
+                                Item.ItemStatus.Discontinued => "bg-warning",
+                                Item.ItemStatus.PendingRestock => "bg-info",
                                 _ => "bg-primary"
                             };
                         }
@@ -78,8 +221,8 @@
                     </td>
                     <td class="text-end">
                         <div class="dropdown">
-                            <a class="btn btn-secondary dropdown-toggle btn-rounded" href="#" role="button" id="dropdownMenuButton"
-                               data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="btn btn-link dropdown-toggle btn-rounded remove-dropdown-carrot" href="#" role="button" 
+                                id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fa-solid fa-ellipsis-vertical"></i>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
@@ -103,7 +246,36 @@
     </table>
 </div>
 
-@* Dialog *@
+@* Pagination *@
+@{
+    var model = new PaginationVM
+            {
+                PageNumber = Model.PageNumber,
+                PageSize = Model.PageSize,
+                TotalItems = Model.TotalItems
+            };
+    @await Html.PartialAsync("_PaginationPartial", model)
+}
+
+@* Filters Dialog *@
+<div class="modal fade" id="filterDialog" tabindex="-1" aria-labelledby="filterDialogLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterDialogLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                Le filtre arrive bientôt !
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Confirm Deletion Dialog *@
 <div class="modal fade" id="deleteDialog" tabindex="-1" aria-labelledby="deleteDialogLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

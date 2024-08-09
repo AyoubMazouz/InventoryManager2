@@ -1,4 +1,5 @@
-﻿using InventoryManager2.Data;
+﻿using Azure;
+using InventoryManager2.Data;
 using InventoryManager2.Data.Migrations;
 using InventoryManager2.Models;
 using InventoryManager2.ViewModels;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using System.Diagnostics;
+using System.Drawing.Printing;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text;
@@ -34,10 +36,10 @@ namespace InventoryManager2.Controllers
                 "Nom complet de l'utilisateur", "Date de création", "Date de mise à jour"
             };
 
-        public IActionResult Index(string search)
+        public IActionResult Index(string search, int page = 1, int pageSize = 10, string sortBy = "Name", string sortDir = "asc")
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
-            var items = _context.Items
+            var itemQuery = _context.Items
                 .Include(i => i.Category)
                 .Include(i => i.Supplier)
                 .Include(i => i.ItemDetail)
@@ -45,9 +47,62 @@ namespace InventoryManager2.Controllers
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
-                items = items.Where(c => c.Name.Contains(search));
+                itemQuery = itemQuery.Where(c => c.Name.Contains(search));
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 250) pageSize = 10;
 
-            return View(items.ToList());
+            itemQuery = ApplySorting(itemQuery, sortBy, sortDir);
+
+            var items = itemQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(c => new ItemVM
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    Status = c.Status,
+                    CategoryId = c.CategoryId,
+                    SupplierId = c.SupplierId,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                    ItemDetail = new ItemDetailVM
+                    {
+                        Quantity = c.ItemDetail.Quantity,
+                        Price = c.ItemDetail.Price,
+                        Manufacturer = c.ItemDetail.Manufacturer,
+                        Weight = c.ItemDetail.Weight,
+                        Dimensions = c.ItemDetail.Dimensions,
+                        Material = c.ItemDetail.Material,
+                        Color = c.ItemDetail.Color,
+                        ManufactureDate = c.ItemDetail.ManufactureDate,
+                        ExpiryDate = c.ItemDetail.ExpiryDate,
+                        CountryOfOrigin = c.ItemDetail.CountryOfOrigin,
+                        ItemId = c.ItemDetail.ItemId
+                    },
+                    CustomFields = c.CustomFields != null ? c.CustomFields.Select(cf => new CustomFieldVM
+                    {
+                        Name = cf.Name,
+                        Value = cf.Value,
+                        DataType = cf.DataType
+                    }).ToList() : new List<CustomFieldVM>()
+                }).ToList();
+
+            var pagination = new PaginationVM<ItemVM>
+            {
+                Items = items,
+                PageNumber = page,
+                PageSize = pageSize,
+                TotalItems = itemQuery.Count()
+            };
+
+            ViewBag.search = search;
+            ViewBag.page = page;
+            ViewBag.pageSize = pageSize;
+            ViewBag.sortBy = sortBy;
+            ViewBag.sortDir = sortDir;
+
+            return View(pagination);
         }
 
         public IActionResult Details(int id)
@@ -421,6 +476,16 @@ namespace InventoryManager2.Controllers
                     Text = e.ToString()
                 }
             ).ToList(), "Value", "Text");
+        }
+
+        private IQueryable<Item> ApplySorting(IQueryable<Item> query, string sortBy, string sortDir)
+        {
+            switch (sortBy.ToLower())
+            {
+                case "name":
+                default:
+                    return sortDir == "asc" ? query.OrderBy(s => s.Name) : query.OrderByDescending(s => s.Name);
+            }
         }
     }
 }

@@ -27,14 +27,16 @@ namespace InventoryManager2.Controllers
             "Identiant", "Nom", "Informations de contact", "Date de création", "Date de mise à jour"
         };
 
-        public IActionResult Index(string search, int page = 1, int pageSize = 1)
+        public IActionResult Index(string search, int page = 1, int pageSize = 10, string sortBy = "Name", string sortDir = "asc")
         {
             var suppliersQuery = _context.Supplier.AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
                 suppliersQuery = suppliersQuery.Where(c => c.Name.Contains(search));
             if (page < 1) page = 1;
-            if (pageSize < 1 || pageSize > 250) pageSize = 10;
+            if (pageSize < 10 || pageSize > 250) pageSize = 10;
+
+            suppliersQuery = ApplySorting(suppliersQuery, sortBy, sortDir);
 
             var suppliers = suppliersQuery
                 .Skip((page - 1) * pageSize)
@@ -47,7 +49,7 @@ namespace InventoryManager2.Controllers
             })
             .ToList();
 
-            var paginatedModel = new PaginationViewModel<SupplierVM>
+            var pagination = new PaginationVM<SupplierVM>
             {
                 Items = suppliers,
                 PageNumber = page,
@@ -58,7 +60,10 @@ namespace InventoryManager2.Controllers
             ViewBag.search = search;
             ViewBag.page = page;
             ViewBag.pageSize = pageSize;
-            return View(paginatedModel);
+            ViewBag.sortBy = sortBy;
+            ViewBag.sortDir = sortDir;
+
+            return View(pagination);
         }
 
         public IActionResult Details(int id)
@@ -239,6 +244,16 @@ namespace InventoryManager2.Controllers
         private bool SupplierExists(int id)
         {
             return _context.Supplier.Any(e => e.Id == id);
+        }
+
+        private IQueryable<Supplier> ApplySorting(IQueryable<Supplier> query, string sortBy, string sortDir)
+        {
+            switch (sortBy.ToLower())
+            {
+                case "name":
+                default:
+                    return sortDir == "asc" ? query.OrderBy(s => s.Name) : query.OrderByDescending(s => s.Name);
+            }
         }
     }
 }
