@@ -1,0 +1,21 @@
+﻿<div class="d-flex align-items-center gap-2">
+    @* Export *@
+    <form asp-action="Export" method="post" class="d-inline">
+        <div class="form-group d-inline-flex align-items-center">
+            <select id="exportType" name="exportType" class="form-select me-2">
+                <option value="xlsx">Excel (.xlsx)</option>
+                <option value="csv">CSV (.csv)</option>
+            </select>
+            <button type="submit" class="btn btn-outline-primary">Exporter</button>
+        </div>
+    </form>
+    @* Import *@
+    <form asp-action="Import" method="post" enctype="multipart/form-data" class="d-inline">
+        <input type="file" id="files" name="files" accept=".xlsx" />
+        <div class="form-group d-inline-flex align-items-center">
+            <button type="submit" class="btn btn-primary">Importer</button>
+        </div>
+    </form>
+    @* Create New *@
+    <a asp-action="Create" class="btn btn-success me-2">Créer</a>
+</div>

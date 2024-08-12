@@ -173,7 +173,7 @@ namespace InventoryManager2.Controllers
                     this.Flash($"La table des fournisseurs a été exportée avec succès !");
                     return excelFile;
                 case "csv":
-                    var csvFile = this.ExportToExcel(suppliers);
+                    var csvFile = this.ExportToCsv(suppliers);
                     this.Flash($"La table des fournisseurs a été exportée avec succès !");
                     return csvFile;
                 default:
@@ -188,7 +188,7 @@ namespace InventoryManager2.Controllers
             if (files == null || files.Count == 0)
             {
                 ModelState.AddModelError("ExcelFile", "Please upload at least one Excel file.");
-                return View();
+                return RedirectToAction(nameof(Index));
             }
 
             var suppliers = new List<Supplier>();
@@ -211,7 +211,6 @@ namespace InventoryManager2.Controllers
                             {
                                 var supplier = new Supplier
                                 {
-                                    Id = int.Parse(worksheet.Cells[row, 1].Text),
                                     Name = worksheet.Cells[row, 2].Text,
                                     ContactInfo = worksheet.Cells[row, 3].Text,
                                     CreatedAt = DateTime.Now,
@@ -223,6 +222,13 @@ namespace InventoryManager2.Controllers
                     }
                 }
             }
+
+            foreach (var supplier in suppliers)
+            {
+                _context.Supplier.Add(supplier);
+            }
+
+            _context.SaveChanges();
 
             return RedirectToAction(nameof(Index));
         }

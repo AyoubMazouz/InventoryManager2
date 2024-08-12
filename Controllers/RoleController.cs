@@ -191,7 +191,80 @@ namespace InventoryManager2.Controllers
             }
         }
 
-        public IActionResult ExportToExcel(List<Role> suppliers)
+        [HttpPost]
+        [AutoValidateAntiforgeryToken]
+        public async Task<IActionResult> Import(ICollection<IFormFile> files)
+        {
+            if (files == null || files.Count == 0)
+            {
+                ModelState.AddModelError("ExcelFile", "Please upload at least one Excel file.");
+                return RedirectToAction(nameof(Index));
+            }
+
+            var roles = new List<Role>();
+
+            foreach (var file in files)
+            {
+                if (file.Length > 0)
+                {
+                    using (var stream = new MemoryStream())
+                    {
+                        await file.CopyToAsync(stream);
+                        stream.Position = 0;
+
+                        using (var package = new ExcelPackage(stream))
+                        {
+                            var worksheet = package.Workbook.Worksheets[0];
+                            var rowCount = worksheet.Dimension.Rows;
+
+                            for (int row = 2; row <= rowCount; row++)
+                            {
+                                var role = new Role
+                                {
+                                    Name = worksheet.Cells[row, 2].Text,
+                                    Description = worksheet.Cells[row, 3].Text,
+                                    CreatedAt = DateTime.Now,
+                                    UpdatedAt = DateTime.Now
+                                };
+                                roles.Add(role);
+                            }
+                        }
+                    }
+                }
+            }
+            var errors = new List<string>();
+
+            foreach (var role in roles)
+            {
+                var existingRole = await _roleManager.FindByNameAsync(role.Name);
+                if (existingRole == null)
+                {
+                    var result = await _roleManager.CreateAsync(role);
+                    if (!result.Succeeded)
+                    {
+                        errors.AddRange(result.Errors.Select(e => e.Description));
+                    }
+                }
+                else
+                {
+                    errors.Add($"Role '{role.Name}' already exists.");
+                }
+            }
+
+            if (errors.Any())
+            {
+                this.Flash(string.Join("\n", errors), AlertType.Danger);
+            }
+            else
+            {
+                this.Flash("Roles imported successfully.", AlertType.Success);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
+        public IActionResult ExportToExcel(List<Role> roles)
         {
             using (var package = new ExcelPackage())
             {
@@ -203,13 +276,13 @@ namespace InventoryManager2.Controllers
                 }
 
                 int row = 2;
-                foreach (var supplier in suppliers)
+                foreach (var role in roles)
                 {
-                    worksheet.Cells[row, 1].Value = supplier.Id;
-                    worksheet.Cells[row, 2].Value = supplier.Name;
-                    worksheet.Cells[row, 3].Value = supplier.Description;
-                    worksheet.Cells[row, 4].Value = supplier.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
-                    worksheet.Cells[row, 5].Value = supplier.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                    worksheet.Cells[row, 1].Value = role.Id;
+                    worksheet.Cells[row, 2].Value = role.Name;
+                    worksheet.Cells[row, 3].Value = role.Description;
+                    worksheet.Cells[row, 4].Value = role.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                    worksheet.Cells[row, 5].Value = role.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss");
                     row++;
                 }
 
@@ -218,32 +291,32 @@ namespace InventoryManager2.Controllers
                 stream.Position = 0;
 
                 var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                var fileName = $"Suppliers-{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                var fileName = $"Roles-{DateTime.Now:yyyyMMddHHmmss}.xlsx";
                 return File(stream, contentType, fileName);
             }
         }
 
-        public IActionResult ExportToCsv(List<Role> suppliers)
+        public IActionResult ExportToCsv(List<Role> roles)
         {
             var csv = new StringBuilder();
 
             csv.AppendLine(string.Join(",", this.headers));
 
-            foreach (var supplier in suppliers)
+            foreach (var role in roles)
             {
                 var row = new List<string>
                 {
-                    supplier.Id.ToString(),
-                    supplier.Name ?? "",
-                    supplier.Description ?? "",
-                    supplier.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                    supplier.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                    role.Id.ToString(),
+                    role.Name ?? "",
+                    role.Description ?? "",
+                    role.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                    role.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")
                 };
 
                 csv.AppendLine(string.Join(",", row));
             }
 
-            var fileName = $"Suppliers-{DateTime.Now:yyyyMMddHHmmss}.csv";
+            var fileName = $"Roles-{DateTime.Now:yyyyMMddHHmmss}.csv";
             var contentType = "text/csv";
             var bytes = Encoding.UTF8.GetBytes(csv.ToString());
 

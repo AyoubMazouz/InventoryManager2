@@ -29,6 +29,7 @@ builder.Services.AddIdentity<User,Role>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders()
+.AddRoles<Role>()
 .AddDefaultUI();
 
 builder.Services.AddRazorPages(options =>
