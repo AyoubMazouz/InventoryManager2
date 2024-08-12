@@ -14,6 +14,8 @@
     @inject SignInManager<User> SignInManager
     @inject UserManager<User> UserManager
 
+    @Html.AntiForgeryToken()
+
     @if (TempData["Alert.Message"] != null)
     {
         <div class="alert @TempData["Alert.Type"] alert-dismissible fade show w-75 mt-3 d-flex justify-content-between align-items-center position-absolute"
@@ -85,7 +87,6 @@
                             </li>
                             <form id="account" method="post" asp-area="Identity" asp-page="/Account/Logout"
                                     class="dropdown-item">
-                                        @Html.AntiForgeryToken()
 
                             <button type="submit" class="text-danger d-flex align-items-center" style="padding: 0; border: none; background: none;">
                                 <i class="fa-solid fa-right-from-bracket text-danger me-2"></i>

@@ -287,7 +287,7 @@
                 Êtes-vous sûr de vouloir supprimer cet article ?
             </div>
             <div class="modal-footer">
-                <form id="deleteForm" method="post">
+                <form id="deleteForm" asp-action="Delete">
                     <input type="hidden" id="deleteItemId" name="id" />
                     <input type="submit" value="Supprimer" class="btn btn-danger" />
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>

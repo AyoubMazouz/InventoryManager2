@@ -114,7 +114,7 @@ namespace InventoryManager2.Controllers
                 Description = role.Description
             };
 
-            return View(role);
+            return View(model);
         }
 
         [HttpPost]
@@ -147,9 +147,17 @@ namespace InventoryManager2.Controllers
 
             if (role == null) return NotFound();
 
-            await _roleManager.DeleteAsync(role);
+            var result = await _roleManager.DeleteAsync(role);
+            if (result.Succeeded)
+            {
+                this.Flash($"Le rôle nommé {role.Name} a été supprimé avec succès !");
+                return RedirectToAction(nameof(Index));
+            }
 
-            this.Flash($"Le rôle nommé {role.Name} a été supprimé avec succès !");
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
 
             return RedirectToAction(nameof(Index));
         }

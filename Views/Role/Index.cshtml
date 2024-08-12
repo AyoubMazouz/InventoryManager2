@@ -169,6 +169,7 @@
     </div>
 </div>
 
+
 @* Confirm Deletion Dialog *@
 <div class="modal fade" id="deleteDialog" tabindex="-1" aria-labelledby="deleteDialogLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -178,10 +179,10 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
-                Êtes-vous sûr de vouloir supprimer ce Role ?
+                Êtes-vous sûr de vouloir supprimer ce fournisseur ?
             </div>
             <div class="modal-footer">
-                <form id="deleteForm" method="post">
+                <form id="deleteForm" asp-action="Delete">
                     <input type="hidden" id="deleteItemId" name="id" />
                     <input type="submit" value="Supprimer" class="btn btn-danger" />
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -190,6 +191,7 @@
         </div>
     </div>
 </div>
+
 
 <script>
     function handleOpenDeleteDialog(id) {
