@@ -33,8 +33,36 @@ namespace InventoryManager2.ViewModels
         public List<CustomFieldVM>? CustomFields { get; set; }
     }
 
-    public class CreateUpdateItemVM
+    public class CreateItemVM
     {
+        [Display(Name = "Titre")]
+        [Required(ErrorMessage = "Le titre est obligatoire.")]
+        [StringLength(100, ErrorMessage = "Le titre ne peut pas dépasser 100 caractères.")]
+        public string? Name { get; set; }
+
+        [Display(Name = "Description")]
+        [Required(ErrorMessage = "La description est obligatoire.")]
+        [StringLength(500, ErrorMessage = "La description ne peut pas dépasser 500 caractères.")]
+        public string? Description { get; set; }
+
+        [Display(Name = "statut")]
+        [Required(ErrorMessage = "Le statut est obligatoire.")]
+        public Item.ItemStatus Status { get; set; }
+
+        [Display(Name = "Catégorie")]
+        public int? CategoryId { get; set; }
+
+        [Display(Name = "Fournisseur")]
+        public int? SupplierId { get; set; }
+
+        public ItemDetailVM ItemDetail { get; set; }
+        public List<CreateUpdateCustomFieldVM>? CustomFields { get; set; }
+    }
+
+    public class UpdateItemVM
+    {
+        public int Id { get; set; }
+
         [Display(Name = "Titre")]
         [Required(ErrorMessage = "Le titre est obligatoire.")]
         [StringLength(100, ErrorMessage = "Le titre ne peut pas dépasser 100 caractères.")]

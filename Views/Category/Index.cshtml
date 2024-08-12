@@ -92,7 +92,7 @@
             </div>
         </form>
         @* Create New*@
-        <a asp-action="Create" class="btn btn-success me-2">Créer Nouveau</a>
+        <a asp-action="Create" class="btn btn-success me-2">Créer</a>
     </div>
 </div>
 
@@ -208,7 +208,7 @@
                 Êtes-vous sûr de vouloir supprimer cette catégorie ?
             </div>
             <div class="modal-footer">
-                <form id="deleteForm" method="post">
+                <form id="deleteForm" asp-action="Delete">
                     <input type="hidden" id="deleteItemId" name="id" />
                     <input type="submit" value="Supprimer" class="btn btn-danger" />
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -221,6 +221,5 @@
 <script>
     function handleOpenDeleteDialog(id) {
         $("#deleteItemId").val(id);
-        $("#deleteForm").attr("action", '@Url.Action("Delete")/' + id);
     }
 </script>

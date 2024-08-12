@@ -1,6 +1,12 @@
 ﻿@model PaginationVM
 
-<nav aria-label="Page navigation" class="d-flex justify-content-center">
+<nav aria-label="Page navigation" class="d-flex justify-content-between">
+    @* Result Count *@
+    <div class="fw-bold">
+        Résultat : <span class="text-primary">@Model.TotalItems</span>
+    </div>
+
+    @* Pagination *@
     <ul class="pagination justify-content-center">
         @if (Model.HasPreviousPage)
         {
@@ -83,4 +89,6 @@
             </li>
         }
     </ul>
+
+    
 </nav>

@@ -25,7 +25,22 @@ namespace InventoryManager2.ViewModels
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }
 
-    public class CreateUpdateSupplierVM
+    public class UpdateSupplierVM
+    {
+        public int Id { get; set; }
+
+        [Display(Name = "Nom")]
+        [Required(ErrorMessage = "Le champ \"Nom\" est obligatoire.")]
+        [StringLength(100, ErrorMessage = "Le champ \"Nom\" doit avoir une longueur maximale de 100 caractères.")]
+        public string Name { get; set; }
+
+        [Display(Name = "Coordonnées")]
+        [Required(ErrorMessage = "Le champ \"Informations de contact\" est obligatoire.")]
+        [StringLength(200, ErrorMessage = "Le champ \"Informations de contact\" doit avoir une longueur maximale de 200 caractères.")]
+        public string ContactInfo { get; set; }
+    }
+
+    public class CreateSupplierVM
     {
         [Display(Name = "Nom")]
         [Required(ErrorMessage = "Le champ \"Nom\" est obligatoire.")]
@@ -36,5 +51,10 @@ namespace InventoryManager2.ViewModels
         [Required(ErrorMessage = "Le champ \"Informations de contact\" est obligatoire.")]
         [StringLength(200, ErrorMessage = "Le champ \"Informations de contact\" doit avoir une longueur maximale de 200 caractères.")]
         public string ContactInfo { get; set; }
+    }
+
+    public class ImportSupplierVM
+    {
+        public IFormFile File { get; set; }
     }
 }

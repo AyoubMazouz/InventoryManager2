@@ -1,17 +1,20 @@
 ﻿using InventoryManager2.Data;
 using InventoryManager2.Models;
 using InventoryManager2.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
+using System.Text;
 
 namespace InventoryManager2.Controllers
 {
+    [Authorize]
     public class RoleController : BaseController
     {
         private readonly ApplicationDbContext _context;
         private readonly RoleManager<Role> _roleManager;
-
 
         public RoleController(ApplicationDbContext context, RoleManager<Role> roleManager)
         {
@@ -19,6 +22,11 @@ namespace InventoryManager2.Controllers
             _roleManager = roleManager;
         }
 
+        private readonly List<string> headers = new List<string>
+        {
+            "Identiant", "Nom", "Description", "Date de création", "Date de mise à jour"
+        };
+      
         public IActionResult Index(string search, int page = 1, int pageSize = 10, string sortBy = "UserName", string sortDir = "asc")
         {
             var roleQuery = _roleManager.Roles.AsQueryable();
@@ -162,7 +170,86 @@ namespace InventoryManager2.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        
+        public IActionResult Export(string exportType)
+        {
+            var roles = _roleManager.Roles.ToList();
+
+            if (roles.Count == 0) return NotFound();
+
+            switch (exportType.ToLower())
+            {
+                case "xlsx":
+                    var excelFile = this.ExportToExcel(roles);
+                    this.Flash($"La table des fournisseurs a été exportée avec succès !");
+                    return excelFile;
+                case "csv":
+                    var csvFile = this.ExportToExcel(roles);
+                    this.Flash($"La table des fournisseurs a été exportée avec succès !");
+                    return csvFile;
+                default:
+                    return BadRequest("Invalid export type.");
+            }
+        }
+
+        public IActionResult ExportToExcel(List<Role> suppliers)
+        {
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Suppliers");
+
+                for (int i = 0; i < this.headers.Count; i++)
+                {
+                    worksheet.Cells[1, i + 1].Value = this.headers[i];
+                }
+
+                int row = 2;
+                foreach (var supplier in suppliers)
+                {
+                    worksheet.Cells[row, 1].Value = supplier.Id;
+                    worksheet.Cells[row, 2].Value = supplier.Name;
+                    worksheet.Cells[row, 3].Value = supplier.Description;
+                    worksheet.Cells[row, 4].Value = supplier.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                    worksheet.Cells[row, 5].Value = supplier.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                    row++;
+                }
+
+                var stream = new MemoryStream();
+                package.SaveAs(stream);
+                stream.Position = 0;
+
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                var fileName = $"Suppliers-{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                return File(stream, contentType, fileName);
+            }
+        }
+
+        public IActionResult ExportToCsv(List<Role> suppliers)
+        {
+            var csv = new StringBuilder();
+
+            csv.AppendLine(string.Join(",", this.headers));
+
+            foreach (var supplier in suppliers)
+            {
+                var row = new List<string>
+                {
+                    supplier.Id.ToString(),
+                    supplier.Name ?? "",
+                    supplier.Description ?? "",
+                    supplier.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                    supplier.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                };
+
+                csv.AppendLine(string.Join(",", row));
+            }
+
+            var fileName = $"Suppliers-{DateTime.Now:yyyyMMddHHmmss}.csv";
+            var contentType = "text/csv";
+            var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+
+            return File(bytes, contentType, fileName);
+        }
+
         private IQueryable<Role> ApplySorting(IQueryable<Role> query, string sortBy, string sortDir)
         {
             switch (sortBy.ToLower())

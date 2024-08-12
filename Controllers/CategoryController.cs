@@ -6,9 +6,11 @@ using InventoryManager2.Models;
 using InventoryManager2.ViewModels;
 using OfficeOpenXml;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InventoryManager2.Controllers
 {
+    [Authorize]
     public class CategoryController : BaseController
     {
         private readonly ApplicationDbContext _context;

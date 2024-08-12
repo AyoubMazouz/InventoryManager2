@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/inventoryManager.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body class="d-flex" style="overflow-y: scroll; overflow-x: hidden; margin-bottom: -100px;">
     @using Microsoft.AspNetCore.Identity
     @inject SignInManager<User> SignInManager
     @inject UserManager<User> UserManager
@@ -18,8 +18,8 @@
 
     @if (TempData["Alert.Message"] != null)
     {
-        <div class="alert @TempData["Alert.Type"] alert-dismissible fade show w-75 mt-3 d-flex justify-content-between align-items-center position-absolute"
-             role="alert" style="z-index: 1050; right: 50%; transform: translateX(50%);">
+        <div class="alert @TempData["Alert.Type"] alert-dismissible fade show w-25 d-flex justify-content-between align-items-center position-absolute"
+                role="alert" style="z-index: 1050; right: 1rem; top: 1rem;">
             <p>@TempData["Alert.Message"]</p>
             <button onclick="handleAlertOnClose()" class="btn btn-outline-secondary" data-dismiss="alert" aria-label="Close">
                 <i class="fa-solid fa-xmark"></i>
@@ -27,110 +27,113 @@
         </div>
     }
 
-    <header class="bg-dark text-light">
-        <nav class="navbar container navbar-expand-lg navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand text-decoration-underline fs-3 me-5" href="#"><span class="fw-bold text-primary">I</span>Manager</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse d-flex justify-content-between w-100" id="navbarScroll">
-                     @if (User.Identity?.IsAuthenticated ?? false)
-                    {
-                        <ul class="navbar-nav my-2 my-lg-0 navbar-nav-scroll collapse navbar-collapse gap-4" 
-                        style="--bs-scroll-height: 100px;">
-                            <li class="nav-item d-flex align-items-center me-2">
-                                <a class="nav-link" asp-controller="Inventory" asp-action="Index">
-                                <i class="fa-solid fa-warehouse"></i>
-                                    Inventory
-                                </a>
-                            </li>
-                            <li class="nav-item d-flex align-items-center me-2">
-                                <a class="nav-link" asp-controller="Supplier" asp-action="Index">
-                                    <i class="fa-solid fa-boxes-packing me-2"></i>
-                                    Suppliers
-                                </a>
-                            </li>
-                            <li class="nav-item dropdown d-flex align-items-center me-2">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fa-solid fa-sliders me-2"></i>
-                                    Settings
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
-                                    <a class="dropdown-item d-flex align-items-center text-decoration-none" asp-controller="Category" asp-action="Index">
-                                        <i class="fa-solid fa-list me-2"></i>
-                                        Catégories
-                                    </a>
-                                    <a class="dropdown-item d-flex align-items-center text-decoration-none" asp-controller="User" asp-action="Index">
-                                        <i class="fa-solid fa-users me-2"></i>
-                                        Utilisateurs
-                                    </a>
-                                    <a class="dropdown-item d-flex align-items-center text-decoration-none" asp-controller="Role" asp-action="Index">
-                                        <i class="fa-solid fa-users-gear me-2"></i>
-                                        Rôles
-                                    </a>
-                                </ul>
-                            </li>
-                        </ul>
-                    }
-                    else { <div></div> }
-                    @if (User.Identity?.IsAuthenticated ?? false)
-                    {
-                    <div class="nav-item dropstart">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="https://imgs.search.brave.com/2PXZ4szg2kn3jwo7AMYNYEqpu-c_r4IWqFuhu7GgeVc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9leHRl/cm5hbC1wcmV2aWV3/LnJlZGQuaXQvSUlz/NGQzSjFBdTFZVTZS/djF2Q1FPQy1peXNZ/NDltN3NFUGQwLVhk/clFJZy5wbmc_YXV0/bz13ZWJwJnM9NmI4/MTA1ZTk4ZWZiNzIw/MmI4OWUyOGNjNjVk/YzJjNTY4NDc5NGNj/Yg" width="40" height="40" class="rounded-circle">
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <li class="dropdown-item d-flex align-items-center justify-items-center">
-                            <img src="https://imgs.search.brave.com/2PXZ4szg2kn3jwo7AMYNYEqpu-c_r4IWqFuhu7GgeVc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9leHRl/cm5hbC1wcmV2aWV3/LnJlZGQuaXQvSUlz/NGQzSjFBdTFZVTZS/djF2Q1FPQy1peXNZ/NDltN3NFUGQwLVhk/clFJZy5wbmc_YXV0/bz13ZWJwJnM9NmI4/MTA1ZTk4ZWZiNzIw/MmI4OWUyOGNjNjVk/YzJjNTY4NDc5NGNj/Yg" width="40" height="40" class="rounded-circle">
-                                <div class="ms-2 fw-bold">@UserManager.GetUserName(User)</div>
-                            </li>
-                            <form id="account" method="post" asp-area="Identity" asp-page="/Account/Logout"
-                                    class="dropdown-item">
+    @* Sidebar *@
+    <header style="position: sticky; top: 0%; width: 280px; height: 100vh;" class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <i class="fa-solid fa-boxes-stacked me-2 fa-2x"></i>
+            <div>
+                <div>Gestionnaire</div>
+                <div class="fw-bold text-primary">
+                    d'inventaire
+                </div>
+            </div>
+        </a>
+        <hr>
+        <ul class="nav nav-pills flex-column mb-auto">
+            @{
+                string controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+                string action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+            }
+            <li>
+                <a asp-controller="Inventory" asp-action="Index"
+                   class="nav-link nav-link text-white @(controller == "Inventory" && action == "Index" ? "active" : "")">
+                    <i class="fa-solid fa-warehouse me-2"></i>
+                    Inventory
+                </a>
+            </li>
+            <li>
+                <a asp-controller="Supplier" asp-action="Index"
+                   class="nav-link text-white @(controller == "Supplier" && action == "Index" ? "active" : "")">
+                    <i class="fa-solid fa-boxes-packing me-2"></i>
+                    Fournisseurs
+                </a>
+            </li>
+            <li>
+                <a asp-controller="Category" asp-action="Index"
+                   class="nav-link text-white @(controller == "Category" && action == "Index" ? "active" : "")">
+                    <i class="fa-solid fa-list me-2"></i>
+                    Catégories
+                </a>
+            </li>
+            <li>
+                <a asp-controller="User" asp-action="Index"
+                   class="nav-link text-white @(controller == "User" && action == "Index" ? "active" : "")">
+                    <i class="fa-solid fa-users me-2"></i>
+                    Utilisateurs
+                </a>
+            </li>
+            <li>
+                <a asp-controller="Role" asp-action="Index"
+                   class="nav-link text-white @(controller == "Role" && action == "Index" ? "active" : "")">
+                    <i class="fa-solid fa-users-gear me-2"></i>
+                    Rôles
+                </a>
+            </li>
+        </ul>
 
+        <hr>
+           
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
+                    <strong>@UserManager.GetUserName(User)</strong>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+                    <li>
+                        <a class="dropdown-item" href="#">
+                            <i class="fa-solid fa-sliders me-2"></i>
+                            Settings
+                        </a>
+                    </li>
+                    <li><a class="dropdown-item" href="#">
+                            <i class="fa-solid fa-user me-2"></i>
+                            Profile
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form id="account" method="post" asp-area="Identity" asp-page="/Account/Logout" class="dropdown-item">
                             <button type="submit" class="text-danger d-flex align-items-center" style="padding: 0; border: none; background: none;">
                                 <i class="fa-solid fa-right-from-bracket text-danger me-2"></i>
                                 Logout
                             </button>
-                            </form>
-                        </ul>
-                    </div>
-                    }
-                    else
-                    {
-                        <div class="nav-item d-flex gap-2">
-                            <a class="btn btn-secondary d-flex align-items-center gap-2" asp-area="Identity" asp-page="/Account/Register">
-                                <i class="fa-solid fa-user-plus"></i>
-                                Register
-                            </a>
-                            <a class="btn btn-primary d-flex align-items-center gap-2 ms-2" asp-area="Identity" asp-page="/Account/Login">
-                                <i class="fa-solid fa-right-to-bracket"></i>
-                                Login
-                            </a>
-                         </div>
-                    }
-                </div>
+                        </form>
+                    </li>
+                </ul>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="py-3">
-            @RenderBody()
-        </main>
-    </div>
+        }
+        else
+        {
+            <a id="account" method="post" asp-area="Identity" asp-action="/Account/Login" class="btn btn-info">
+                <i class="fa-solid fa-user-plus me-2"></i>
+                se connecter
+            </a>
+        }
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2024 - inventoryManager 
-        </div>
-    </footer>
+    </header>
+
+    <main role="main" class="flex-grow-1 container py-3">
+        @RenderBody()
+    </main>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <script>
-        $(document).ready(function (){
+        $(document).ready(function () {
             setTimeout(() => {
                 $('div[role="alert"]').remove();
             }, 7000)

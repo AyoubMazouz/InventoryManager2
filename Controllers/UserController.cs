@@ -1,16 +1,19 @@
 ﻿using InventoryManager2.Data;
 using InventoryManager2.Models;
 using InventoryManager2.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace InventoryManager2.Controllers
 {
-    public class UserController : Controller
+    [Authorize]
+    public class UserController : BaseController
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
@@ -27,7 +30,8 @@ namespace InventoryManager2.Controllers
 
             if (page < 1) page = 1;
             if (pageSize < 10 || pageSize > 250) pageSize = 10;
-            if (!string.IsNullOrEmpty(search)) usersQuery = usersQuery
+            if (!string.IsNullOrEmpty(search))
+                usersQuery = usersQuery
                     .Where(c => c.UserName.Contains(search) || c.Email.Contains(search));
 
             usersQuery = ApplySorting(usersQuery, sortBy, sortDir);
@@ -79,65 +83,125 @@ namespace InventoryManager2.Controllers
             var model = new UserVM
             {
                 Id = user.Id,
-                UserName = user.UserName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
+                UserName = user.UserName ?? "",
+                Email = user.Email ?? "",
+                PhoneNumber = user.PhoneNumber ?? "",
                 EmailConfirmed = user.EmailConfirmed,
                 PhoneNumberConfirmed = user.PhoneNumberConfirmed,
-                Roles = await _userManager.GetRolesAsync(user)
+                Roles = (await _userManager.GetRolesAsync(user)).ToList()
             };
 
             return View(model);
         }
 
-        public ActionResult Create()
+        public IActionResult Create()
         {
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<IActionResult> Create(CreateUserVM model)
         {
-            try
+            if (!ModelState.IsValid) return View(model);
+
+            var user = new User
             {
+                UserName = model.UserName,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                EmailConfirmed = model.EmailConfirmed,
+                PhoneNumberConfirmed = model.PhoneNumberConfirmed
+            };
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (result.Succeeded)
+            {
+                this.Flash($"Un nouvel utilisateur nommé {model.UserName} a été créé !");
                 return RedirectToAction(nameof(Index));
             }
-            catch
+
+            foreach (var error in result.Errors)
             {
-                return View();
+                ModelState.AddModelError(string.Empty, error.Description);
             }
+
+            return View(model);
         }
 
-        public ActionResult Edit(int id)
+        public async Task<IActionResult> Edit(string id)
         {
-            return View();
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null) return NotFound();
+
+            var model = new EditUserVM
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                EmailConfirmed = user.EmailConfirmed,
+                PhoneNumberConfirmed = user.PhoneNumberConfirmed
+            };
+
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> Edit(string id, EditUserVM model)
         {
-            try
+            if (id != model.Id) return NotFound();
+
+            if (!ModelState.IsValid) return View(model);
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null) return NotFound();
+
+            user.UserName = model.UserName;
+            user.Email = model.Email;
+            user.PhoneNumber = model.PhoneNumber;
+            user.EmailConfirmed = model.EmailConfirmed;
+            user.PhoneNumberConfirmed = model.PhoneNumberConfirmed;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
             {
+                this.Flash($"L'utilisateur nommé {user.UserName} a été mis à jour avec succès !");
                 return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                return View();
-            }
-        }
 
-        public ActionResult Delete(int id)
-        {
-            return View();
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(string id)
         {
-            return View();
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null) return NotFound();
+
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
+            {
+                this.Flash($"L'utilisateur nommé {user.UserName} a été supprimé avec succès !");
+                return RedirectToAction(nameof(Index));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         private IQueryable<User> ApplySorting(IQueryable<User> query, string sortBy, string sortDir)

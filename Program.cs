@@ -27,7 +27,9 @@ builder.Services.AddIdentity<User,Role>(options =>
     options.Password.RequiredLength = 2;
     options.Password.RequiredUniqueChars = 0;
 })
-.AddEntityFrameworkStores<ApplicationDbContext>();
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders()
+.AddDefaultUI();
 
 builder.Services.AddRazorPages(options =>
 {
@@ -53,7 +55,6 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedCultures = supportedCultures,
     SupportedUICultures = supportedCultures
 });
-
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

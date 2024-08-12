@@ -10,9 +10,11 @@ using InventoryManager2.Models;
 using InventoryManager2.ViewModels;
 using OfficeOpenXml;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InventoryManager2.Controllers
 {
+    [Authorize]
     public class SupplierController : BaseController
     {
         private readonly ApplicationDbContext _context;
@@ -89,7 +91,7 @@ namespace InventoryManager2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(CreateUpdateSupplierVM model)
+        public IActionResult Create(CreateSupplierVM model)
         {
             if (!ModelState.IsValid) return View(model);
 
@@ -120,8 +122,10 @@ namespace InventoryManager2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, CreateUpdateSupplierVM model)
+        public IActionResult Edit(int id, UpdateSupplierVM model)
         {
+            if (id != model.Id) return NotFound();
+
             if (!ModelState.IsValid) return View(model);
 
             var supplier = _context.Supplier.Find(id);
@@ -175,6 +179,52 @@ namespace InventoryManager2.Controllers
                 default:
                     return BadRequest("Invalid export type.");
             }
+        }
+
+        [HttpPost]
+        [AutoValidateAntiforgeryToken]
+        public async Task<IActionResult> Import(ICollection<IFormFile> files)
+        {
+            if (files == null || files.Count == 0)
+            {
+                ModelState.AddModelError("ExcelFile", "Please upload at least one Excel file.");
+                return View();
+            }
+
+            var suppliers = new List<Supplier>();
+
+            foreach (var file in files)
+            {
+                if (file.Length > 0)
+                {
+                    using (var stream = new MemoryStream())
+                    {
+                        await file.CopyToAsync(stream);
+                        stream.Position = 0;
+
+                        using (var package = new ExcelPackage(stream))
+                        {
+                            var worksheet = package.Workbook.Worksheets[0];
+                            var rowCount = worksheet.Dimension.Rows;
+
+                            for (int row = 2; row <= rowCount; row++)
+                            {
+                                var supplier = new Supplier
+                                {
+                                    Id = int.Parse(worksheet.Cells[row, 1].Text),
+                                    Name = worksheet.Cells[row, 2].Text,
+                                    ContactInfo = worksheet.Cells[row, 3].Text,
+                                    CreatedAt = DateTime.Now,
+                                    UpdatedAt = DateTime.Now
+                                };
+                                suppliers.Add(supplier);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult ExportToExcel(List<Supplier> suppliers)

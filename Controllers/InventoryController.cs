@@ -130,7 +130,7 @@ namespace InventoryManager2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(CreateUpdateItemVM model)
+        public IActionResult Create(CreateItemVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -153,7 +153,7 @@ namespace InventoryManager2.Controllers
                 CustomFields = model.CustomFields?.Select(field => new CustomField
                 {
                     Name = field.Name,
-                    Value = field.Value,
+                    Value = field?.Value,
                     DataType = field.DataType,
                 }).ToList(),
                 ItemDetail = new ItemDetail
@@ -193,7 +193,7 @@ namespace InventoryManager2.Controllers
 
             if (item == null) return NotFound();
 
-            var model = new CreateUpdateItemVM
+            var model = new UpdateItemVM
             {
                 Name = item.Name,
                 Description = item.Description,
@@ -231,8 +231,11 @@ namespace InventoryManager2.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, CreateUpdateItemVM model)
+        public IActionResult Edit(int id, UpdateItemVM model)
         {
+
+            if (id != model.Id) return NotFound();
+
             if (!ModelState.IsValid)
             {
                 ViewBag.StatusList = this.GetStatusSelectList();

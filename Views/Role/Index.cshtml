@@ -72,7 +72,7 @@
             </div>
         </form>
         @* Create New*@
-        <a asp-action="Create" class="btn btn-success me-2">Créer Nouveau</a>
+        <a asp-action="Create" class="btn btn-success me-2">Créer</a>
     </div>
 </div>
 
@@ -196,6 +196,5 @@
 <script>
     function handleOpenDeleteDialog(id) {
         $("#deleteItemId").val(id);
-        $("#deleteForm").attr("action", '@Url.Action("Delete")/' + id);
     }
 </script>
