@@ -134,24 +134,15 @@ namespace InventoryManager2.Controllers
             _context.Update(supplier);
             _context.SaveChanges();
 
-            this.Flash($"Supplier named {supplier.Name} has been Upadted Successfully!");
+            this.Flash($"Le fournisseur nommé {supplier.Name} a été mis à jour avec succès !");
 
             return RedirectToAction(nameof(Index));
 
         }
 
-        public IActionResult Delete(int id)
-        {
-            var supplier = _context.Supplier.Find(id);
-
-            if (supplier == null) return NotFound();
-
-            return View(supplier);
-        }
-
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public IActionResult Delete(int id)
         {
             var supplier = _context.Supplier.Find(id);
 
@@ -160,7 +151,7 @@ namespace InventoryManager2.Controllers
             _context.Supplier.Remove(supplier);
             _context.SaveChanges();
 
-            this.Flash($"supplier named {supplier.Name} has been Deleted Successfully!");
+            this.Flash($"Le fournisseur nommé {supplier.Name} a été supprimé avec succès !");
 
             return RedirectToAction(nameof(Index));
         }
@@ -174,9 +165,13 @@ namespace InventoryManager2.Controllers
             switch (exportType.ToLower())
             {
                 case "xlsx":
-                    return this.ExportToExcel(suppliers);
+                    var excelFile = this.ExportToExcel(suppliers);
+                    this.Flash($"La table des fournisseurs a été exportée avec succès !");
+                    return excelFile;
                 case "csv":
-                    return this.ExportToCsv(suppliers);
+                    var csvFile = this.ExportToExcel(suppliers);
+                    this.Flash($"La table des fournisseurs a été exportée avec succès !");
+                    return csvFile;
                 default:
                     return BadRequest("Invalid export type.");
             }

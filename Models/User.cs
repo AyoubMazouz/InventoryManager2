@@ -7,5 +7,6 @@ namespace InventoryManager2.Models
     public class User : IdentityUser    
     {
         public ICollection<Item>? Items { get; set; }
+        public ICollection<Role>? Roles { get; set; }
     }
 }

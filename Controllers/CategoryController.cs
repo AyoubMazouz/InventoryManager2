@@ -112,7 +112,7 @@ namespace InventoryManager2.Controllers
             _context.Add(category);
             _context.SaveChanges();
 
-            this.Flash($"New category named {category.Name} has been created!");
+            this.Flash($"Une nouvelle catégorie nommée {category.Name} a été créée !");
 
             return RedirectToAction(nameof(Index));
         }
@@ -156,7 +156,7 @@ namespace InventoryManager2.Controllers
             _context.Update(category);
             _context.SaveChanges();
 
-            this.Flash($"category named {model.Name} has been Upadted Successfully!");
+            this.Flash($"La catégorie nommée {model.Name} a été mise à jour avec succès !");
 
             return RedirectToAction(nameof(Index));
         }
@@ -172,7 +172,7 @@ namespace InventoryManager2.Controllers
             if (this.HasDependencies(category))
             {
                 this.Flash(
-                    $"category named {category.Name} has one or more Subcategory that depends on it!", 
+                    $"La catégorie nommée {category.Name} a une ou plusieurs sous-catégories qui en dépendent !", 
                     AlertType.Warn
                 );
                 return RedirectToAction(nameof(Delete));
@@ -181,7 +181,7 @@ namespace InventoryManager2.Controllers
             _context.Category.Remove(category);
             _context.SaveChanges();
 
-            this.Flash($"category named {category.Name} has been Deleted Successfully!");
+            this.Flash($"La catégorie nommée {category.Name} a été supprimée avec succès !");
 
             return RedirectToAction(nameof(Index));
         }
@@ -197,9 +197,13 @@ namespace InventoryManager2.Controllers
             switch (exportType.ToLower())
             {
                 case "xlsx":
-                    return this.ExportToExcel(categories);
+                    var excelFile = this.ExportToExcel(categories);
+                    this.Flash($"La table des fournisseurs a été exportée avec succès !");
+                    return excelFile;
                 case "csv":
-                    return this.ExportToCsv(categories);
+                    var csvFile = this.ExportToExcel(categories);
+                    this.Flash($"La table des fournisseurs a été exportée avec succès !");
+                    return csvFile;
                 default:
                     return BadRequest("Invalid export type.");
             }

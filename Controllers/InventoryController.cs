@@ -176,7 +176,7 @@ namespace InventoryManager2.Controllers
             _context.Items.Add(item);
             _context.SaveChanges();
 
-            this.Flash($"New Item named {item.Name} has been created!");
+            this.Flash($"Un nouvel article nommé {item.Name} a été créé !");
 
             return RedirectToAction(nameof(Index));
         }
@@ -300,7 +300,7 @@ namespace InventoryManager2.Controllers
             _context.Items.Update(item);
             _context.SaveChanges();
 
-            this.Flash($"Item named {item.Name} has been Upadted Successfully!");
+            this.Flash($"L'article nommé {item.Name} a été mis à jour avec succès !");
 
             return RedirectToAction(nameof(Index));
         }
@@ -340,7 +340,7 @@ namespace InventoryManager2.Controllers
             _context.Items.Remove(item);
             _context.SaveChanges();
 
-            this.Flash($"Item named {item.Name} has been Deleted Successfully!");
+            this.Flash($"L'article nommé {item.Name} a été supprimé avec succès !");
 
             return RedirectToAction(nameof(Index));
         }
@@ -364,9 +364,13 @@ namespace InventoryManager2.Controllers
             switch (exportType.ToLower())
             {
                 case "xlsx":
-                    return this.ExportToExcel(items);
+                    var excelFile = this.ExportToExcel(items);
+                    this.Flash($"La table des articles a été exportée avec succès !");
+                    return excelFile;
                 case "csv":
-                    return this.ExportToCsv(items);
+                    var csvFile = this.ExportToExcel(items);
+                    this.Flash($"La table des articles a été exportée avec succès !");
+                    return csvFile;
                 default:
                     return BadRequest("Invalid export type.");
             }

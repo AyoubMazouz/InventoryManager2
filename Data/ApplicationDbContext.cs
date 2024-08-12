@@ -24,6 +24,10 @@ namespace InventoryManager2.Data
                 .HasForeignKey(i => i.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Roles)
+                .WithMany(i => i.Users);
+
             modelBuilder.Entity<Item>()
                 .HasOne(i => i.ItemDetail)
                 .WithOne(d => d.Item)

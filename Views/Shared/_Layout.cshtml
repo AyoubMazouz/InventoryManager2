@@ -33,64 +33,83 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse d-flex justify-content-between w-100" id="navbarScroll">
-                    <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll collapse navbar-collapse gap-4" 
+                     @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <ul class="navbar-nav my-2 my-lg-0 navbar-nav-scroll collapse navbar-collapse gap-4" 
                         style="--bs-scroll-height: 100px;">
-                        <li class="nav-item d-flex align-items-center me-2">
-                            <i class="fa-solid fa-warehouse"></i>
-                            <a class="nav-link" asp-controller="Inventory" asp-action="Index">Inventory</a>
-                        </li>
-                        <li class="nav-item dropdown d-flex align-items-center me-2">
-                            <i class="fa-solid fa-sliders"></i>
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Settings
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
-                                <a class="dropdown-item d-flex align-items-center text-decoration-none" asp-controller="Category" asp-action="Index">
-                                    <i class="fa-solid fa-list me-2"></i>
-                                    Categories
-                                    </a>
-                                <a class="dropdown-item d-flex align-items-center text-decoration-none" asp-controller="Supplier" asp-action="Index">
+                            <li class="nav-item d-flex align-items-center me-2">
+                                <a class="nav-link" asp-controller="Inventory" asp-action="Index">
+                                <i class="fa-solid fa-warehouse"></i>
+                                    Inventory
+                                </a>
+                            </li>
+                            <li class="nav-item d-flex align-items-center me-2">
+                                <a class="nav-link" asp-controller="Supplier" asp-action="Index">
                                     <i class="fa-solid fa-boxes-packing me-2"></i>
                                     Suppliers
                                 </a>
-                            </ul>
-                        </li>
-                    </ul>
-                    <div class="nav-item dropstart">
+                            </li>
+                            <li class="nav-item dropdown d-flex align-items-center me-2">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-sliders me-2"></i>
+                                    Settings
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
+                                    <a class="dropdown-item d-flex align-items-center text-decoration-none" asp-controller="Category" asp-action="Index">
+                                        <i class="fa-solid fa-list me-2"></i>
+                                        Catégories
+                                    </a>
+                                    <a class="dropdown-item d-flex align-items-center text-decoration-none" asp-controller="User" asp-action="Index">
+                                        <i class="fa-solid fa-users me-2"></i>
+                                        Utilisateurs
+                                    </a>
+                                    <a class="dropdown-item d-flex align-items-center text-decoration-none" asp-controller="Role" asp-action="Index">
+                                        <i class="fa-solid fa-users-gear me-2"></i>
+                                        Rôles
+                                    </a>
+                                </ul>
+                            </li>
+                        </ul>
+                    }
+                    else { <div></div> }
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                    <div class="nav-item dropstart">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <img src="https://imgs.search.brave.com/2PXZ4szg2kn3jwo7AMYNYEqpu-c_r4IWqFuhu7GgeVc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9leHRl/cm5hbC1wcmV2aWV3/LnJlZGQuaXQvSUlz/NGQzSjFBdTFZVTZS/djF2Q1FPQy1peXNZ/NDltN3NFUGQwLVhk/clFJZy5wbmc_YXV0/bz13ZWJwJnM9NmI4/MTA1ZTk4ZWZiNzIw/MmI4OWUyOGNjNjVk/YzJjNTY4NDc5NGNj/Yg" width="40" height="40" class="rounded-circle">
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                    @if (User.Identity?.IsAuthenticated ?? false)
-                                    {
-                                    <li class="dropdown-item d-flex align-items-center justify-items-center">
-                                    <img src="https://imgs.search.brave.com/2PXZ4szg2kn3jwo7AMYNYEqpu-c_r4IWqFuhu7GgeVc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9leHRl/cm5hbC1wcmV2aWV3/LnJlZGQuaXQvSUlz/NGQzSjFBdTFZVTZS/djF2Q1FPQy1peXNZ/NDltN3NFUGQwLVhk/clFJZy5wbmc_YXV0/bz13ZWJwJnM9NmI4/MTA1ZTk4ZWZiNzIw/MmI4OWUyOGNjNjVk/YzJjNTY4NDc5NGNj/Yg" width="40" height="40" class="rounded-circle">
-                                        <div class="ms-2 fw-bold">@UserManager.GetUserName(User)</div>
-                                    </li>
-                                    <form id="account" method="post" asp-area="Identity" asp-page="/Account/Logout"
-                                          class="dropdown-item">
-                                                @Html.AntiForgeryToken()
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <li class="dropdown-item d-flex align-items-center justify-items-center">
+                            <img src="https://imgs.search.brave.com/2PXZ4szg2kn3jwo7AMYNYEqpu-c_r4IWqFuhu7GgeVc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9leHRl/cm5hbC1wcmV2aWV3/LnJlZGQuaXQvSUlz/NGQzSjFBdTFZVTZS/djF2Q1FPQy1peXNZ/NDltN3NFUGQwLVhk/clFJZy5wbmc_YXV0/bz13ZWJwJnM9NmI4/MTA1ZTk4ZWZiNzIw/MmI4OWUyOGNjNjVk/YzJjNTY4NDc5NGNj/Yg" width="40" height="40" class="rounded-circle">
+                                <div class="ms-2 fw-bold">@UserManager.GetUserName(User)</div>
+                            </li>
+                            <form id="account" method="post" asp-area="Identity" asp-page="/Account/Logout"
+                                    class="dropdown-item">
+                                        @Html.AntiForgeryToken()
 
-                                    <button type="submit" class="text-danger d-flex align-items-center" style="padding: 0; border: none; background: none;">
-                                        <i class="fa-solid fa-right-from-bracket text-danger me-2"></i>
-                                        Logout
-                                    </button>
-                                    </form>
-                                    }
-                                    else
-                                    {
-                                <a class="dropdown-item d-flex align-items-center text-success" asp-area="Identity" asp-page="/Account/Login">
-                                    <i class="fa-solid fa-right-to-bracket me-2"></i>
-                                    Login
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center text-info" asp-area="Identity" asp-page="/Account/Register">
-                                    <i class="fa-solid fa-user-plus text-info me-2"></i>
-                                    Register</a>
-                                    }
-                            </ul>
-                        </div>
+                            <button type="submit" class="text-danger d-flex align-items-center" style="padding: 0; border: none; background: none;">
+                                <i class="fa-solid fa-right-from-bracket text-danger me-2"></i>
+                                Logout
+                            </button>
+                            </form>
+                        </ul>
                     </div>
+                    }
+                    else
+                    {
+                        <div class="nav-item d-flex gap-2">
+                            <a class="btn btn-secondary d-flex align-items-center gap-2" asp-area="Identity" asp-page="/Account/Register">
+                                <i class="fa-solid fa-user-plus"></i>
+                                Register
+                            </a>
+                            <a class="btn btn-primary d-flex align-items-center gap-2 ms-2" asp-area="Identity" asp-page="/Account/Login">
+                                <i class="fa-solid fa-right-to-bracket"></i>
+                                Login
+                            </a>
+                         </div>
+                    }
                 </div>
+            </div>
         </nav>
     </header>
     <div class="container">
