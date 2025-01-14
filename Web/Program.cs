@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using OfficeOpenXml;
 using System.Globalization;
+using System.Data;
+using Microsoft.Data.SqlClient;
 
 
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -20,6 +22,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddAuthorization();
 
 string connectionStrings = builder.Configuration["ConnectionStrings:DefaultConnection"]!;
+builder.Services.AddScoped<IDbConnection>(sp => new SqlConnection(connectionStrings));
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionStrings));
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionStrings));
 

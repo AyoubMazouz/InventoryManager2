@@ -1,6 +1,8 @@
 using Api.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Dapper;
 
 namespace Api.Controllers;
 
@@ -22,14 +24,25 @@ public class TableController : ControllerBase
     }
 
     [HttpGet("names")]
-    public async Task<IActionResult> Names()
+    public async Task<IActionResult> Names(int page = 1, int size = 1, string? filter = null)
     {
         var result = new List<Dictionary<string, object>>();
         var tableName = "Employees";
 
         using (var command = _context.Database.GetDbConnection().CreateCommand())
         {
-            command.CommandText = $"SELECT * FROM {tableName}";
+            // Build the SQL query with filtering and pagination
+            var query = $"SELECT * FROM {tableName}";
+            if (!string.IsNullOrEmpty(filter))
+            {
+                query += $" WHERE Name LIKE @filter";
+                command.Parameters.Add(new SqlParameter("@filter", $"%{filter}%"));
+            }
+            query += $" ORDER BY EmployeeId OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+            command.CommandText = query;
+            command.Parameters.Add(new SqlParameter("@offset", (page - 1) * size));
+            command.Parameters.Add(new SqlParameter("@pageSize", size));
+
             _context.Database.OpenConnection();
 
             using (var reader = await command.ExecuteReaderAsync())
@@ -48,4 +61,29 @@ public class TableController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("namesd")]
+    public async Task<IActionResult> Namesd(int page = 1, int size = 10, string? filter = null)
+    {
+        var tableName = "Employees";
+        var query = $"SELECT * FROM {tableName}";
+        var parameters = new DynamicParameters();
+
+        if (!string.IsNullOrEmpty(filter))
+        {
+            query += " WHERE Name LIKE @filter";
+            parameters.Add("filter", $"%{filter}%");
+        }
+
+        query += " ORDER BY EmployeeId OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+        parameters.Add("offset", (page - 1) * size);
+        parameters.Add("pageSize", size);
+
+        using (var connection = _context.Database.GetDbConnection())
+        {
+            var result = await connection.QueryAsync(query, parameters);
+            return Ok(result);
+        }
+    }
+
 }
