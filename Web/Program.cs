@@ -1,6 +1,5 @@
 using Web.Data;
 using Web.Models;
-using Api.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,8 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using OfficeOpenXml;
 using System.Globalization;
-using System.Data;
-using Microsoft.Data.SqlClient;
+using Dal.Data;
 
 
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -22,8 +20,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddAuthorization();
 
 string connectionStrings = builder.Configuration["ConnectionStrings:DefaultConnection"]!;
-builder.Services.AddScoped<IDbConnection>(sp => new SqlConnection(connectionStrings));
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionStrings));
+builder.Services.AddSingleton(provider => new DapperContext(connectionStrings));
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionStrings));
 
 builder.Services.AddIdentity<User, Role>(options =>
@@ -48,9 +45,10 @@ builder.Services.AddRazorPages(options =>
 
 builder.Services.AddSwaggerGen(config =>
 {
-    config.SwaggerDoc("", new OpenApiInfo
+    config.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "My API",
+        Version = "v1"
     });
 });
 
@@ -89,7 +87,7 @@ app.MapRazorPages();
 app.UseSwagger();
 app.UseSwaggerUI(config =>
 {
-    config.SwaggerEndpoint("/swagger/swagger.json", "My API");
+    config.SwaggerEndpoint("/swagger/v1/swagger.json", "My API");
     config.RoutePrefix = "swagger";
 });
 

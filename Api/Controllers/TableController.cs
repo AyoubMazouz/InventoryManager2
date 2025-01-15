@@ -1,8 +1,6 @@
-using Api.Data;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Dapper;
+using Dal.Data;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
@@ -10,80 +8,65 @@ namespace Api.Controllers;
 [Route("api/v1/[controller]")]
 public class TableController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly DapperContext _context;
 
-    public TableController(AppDbContext context)
+    public TableController(DapperContext context)
     {
         _context = context;
     }
 
     [HttpGet]
-    public IActionResult Index()
+    public async Task<IActionResult> Index(int page = 1, int size = 10)
     {
-        return Ok("Hello World");
-    }
-
-    [HttpGet("names")]
-    public async Task<IActionResult> Names(int page = 1, int size = 1, string? filter = null)
-    {
-        var result = new List<Dictionary<string, object>>();
-        var tableName = "Employees";
-
-        using (var command = _context.Database.GetDbConnection().CreateCommand())
-        {
-            // Build the SQL query with filtering and pagination
-            var query = $"SELECT * FROM {tableName}";
-            if (!string.IsNullOrEmpty(filter))
-            {
-                query += $" WHERE Name LIKE @filter";
-                command.Parameters.Add(new SqlParameter("@filter", $"%{filter}%"));
-            }
-            query += $" ORDER BY EmployeeId OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
-            command.CommandText = query;
-            command.Parameters.Add(new SqlParameter("@offset", (page - 1) * size));
-            command.Parameters.Add(new SqlParameter("@pageSize", size));
-
-            _context.Database.OpenConnection();
-
-            using (var reader = await command.ExecuteReaderAsync())
-            {
-                while (await reader.ReadAsync())
-                {
-                    var row = new Dictionary<string, object>();
-                    for (int i = 0; i < reader.FieldCount; i++)
-                    {
-                        row[reader.GetName(i)] = reader.GetValue(i);
-                    }
-                    result.Add(row);
-                }
-            }
-        }
-
-        return Ok(result);
-    }
-
-    [HttpGet("namesd")]
-    public async Task<IActionResult> Namesd(int page = 1, int size = 10, string? filter = null)
-    {
-        var tableName = "Employees";
-        var query = $"SELECT * FROM {tableName}";
+        var query = $"SELECT * FROM INFORMATION_SCHEMA.TABLES ORDER BY TABLE_NAME OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
         var parameters = new DynamicParameters();
 
-        if (!string.IsNullOrEmpty(filter))
-        {
-            query += " WHERE Name LIKE @filter";
-            parameters.Add("filter", $"%{filter}%");
-        }
-
-        query += " ORDER BY EmployeeId OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
         parameters.Add("offset", (page - 1) * size);
         parameters.Add("pageSize", size);
 
-        using (var connection = _context.Database.GetDbConnection())
+        using (var connection = _context.CreateConnection())
         {
             var result = await connection.QueryAsync(query, parameters);
             return Ok(result);
         }
     }
 
+    [HttpGet("{name}")]
+    public async Task<IActionResult> Get(string name, string? orderBy, bool asc = true, int page = 1, int size = 2)
+    {
+        var sortDir = asc ? "ASC" : "DESC";
+
+        var columnsParameters = new DynamicParameters();
+        var columnsQuery = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @tableName";
+        columnsParameters.Add("tableName", name);
+        var columns = new List<string>();
+        using (var connection = _context.CreateConnection())
+        {
+            var result = await connection.QueryAsync<string>(columnsQuery, columnsParameters);
+            columns = result.ToList();
+        }
+
+        if (orderBy == null)
+        {
+            orderBy = columns[0];
+        }
+        else if (!columns.Contains(orderBy))
+        {
+            return BadRequest($"Invalid column name: {orderBy}");
+        }
+
+        var parameters = new DynamicParameters();
+        var query = $@"
+            SELECT * FROM {name} 
+            ORDER BY {orderBy} {sortDir} 
+            OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+        parameters.Add("pageSize", size);
+        parameters.Add("offset", (page - 1) * size);
+
+        using (var connection = _context.CreateConnection())
+        {
+            var result = await connection.QueryAsync(query, parameters);
+            return Ok(result);
+        }
+    }
 }
